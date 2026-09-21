@@ -1,0 +1,5 @@
+# Genessence code ownership — Cost-Innovation-Module (pilot)
+# The CTO is the required reviewer for every change. Combined with the main
+# ruleset's "require code owner review", this enforces CTO approval on merges to main.
+
+*   @shrey-mishra

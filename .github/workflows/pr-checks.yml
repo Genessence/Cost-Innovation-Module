@@ -1,0 +1,21 @@
+name: PR checks
+
+# Caller workflow — runs on every PR into main/develop and delegates to the
+# org reusable check. The resulting check run is what you add as a REQUIRED
+# status check in the main/develop rulesets.
+#
+# NOTE: 'edited' is included so re-editing the PR body re-runs the Test cases
+# check (the check reads the PR description).
+
+on:
+  pull_request:
+    types: [opened, reopened, edited, synchronize, ready_for_review, labeled, unlabeled]
+    branches: [main, develop]
+
+permissions:
+  contents: read
+  pull-requests: read
+
+jobs:
+  test-cases:
+    uses: Genessence/.github/.github/workflows/pr-check-test-cases.yml@main

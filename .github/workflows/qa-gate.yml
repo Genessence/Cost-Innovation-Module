@@ -1,0 +1,20 @@
+name: qa-gate
+
+# Caller workflow — enforces the membership-verified QA approval on PRs to main.
+# The resulting check run ("qa-gate / qa-gate") is a REQUIRED status check in the
+# main ruleset. Needs the ORG_READ_TOKEN secret (see SECRETS-REQUIRED.md).
+
+on:
+  pull_request:
+    types: [opened, synchronize, labeled, unlabeled]
+    branches: [main]
+
+permissions:
+  contents: read
+  pull-requests: write
+  issues: write
+
+jobs:
+  qa-gate:
+    uses: Genessence/.github/.github/workflows/qa-gate.yml@main
+    secrets: inherit
