@@ -60,6 +60,14 @@ export function PriorityBadge({ priority }: { priority: TaskPriority }) {
   );
 }
 
+export function VendorBadge() {
+  return (
+    <span className="inline-flex items-center rounded-full bg-orange-100 px-2.5 py-0.5 text-xs font-medium text-orange-700 ring-1 ring-inset ring-orange-600/20">
+      Vendor
+    </span>
+  );
+}
+
 export function RoleBadge({ role }: { role: 'submitter' | 'validator' }) {
   return role === 'validator' ? (
     <span className="inline-flex items-center rounded-full bg-primary-light px-2.5 py-0.5 text-xs font-medium text-primary-dark ring-1 ring-inset ring-primary/20">

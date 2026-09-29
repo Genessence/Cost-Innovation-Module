@@ -4,7 +4,12 @@ import { COST_INNOVATION_TYPES, DEPARTMENTS, type CostInnovationType, type Depar
  * Categorical palette validated for CVD separation and lightness on white cards
  * (teal-led, fixed slot order — never cycled or re-ranked).
  */
-export const CATEGORICAL = ['#0d9488', '#eda100', '#4a3aa7', '#e34948', '#2a78d6', '#eb6834', '#e87ba4'];
+export const CATEGORICAL = [
+  '#0d9488', '#eda100', '#4a3aa7', '#e34948', '#2a78d6',
+  '#eb6834', '#e87ba4', '#16a34a', '#7c3aed', '#0369a1',
+  '#b45309', '#dc2626', '#0f766e', '#9333ea', '#ca8a04',
+  '#15803d', '#1d4ed8', '#374151',
+];
 
 /** Fixed department → color mapping, consistent across every chart. */
 export const DEPT_COLORS: Record<Department, string> = Object.fromEntries(

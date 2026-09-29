@@ -31,6 +31,10 @@ const DEPT_SHORT: Record<Department, string> = {
   Process: 'Process',
   Supplier: 'Supplier',
 };
+// Synthetic grouping bucket for vendor-submitted ideas (no department).
+// Chart-only — deliberately NOT added to the DEPARTMENTS const.
+const EXTERNAL_LABEL = 'External';
+const EXTERNAL_COLOR = '#374151';
 
 const RANGES = [
   { key: 'all', label: 'All time', months: Infinity },
@@ -87,29 +91,40 @@ export function Dashboard() {
       : 0;
 
   // ── Chart data ──────────────────────────────────────────────────────────
-  const perDept = useMemo(
-    () =>
-      DEPARTMENTS.map((dept) => ({
-        dept: DEPT_SHORT[dept],
-        fullDept: dept,
-        ideas: filtered.filter((i) => i.department === dept).length,
-      })),
-    [filtered]
-  );
+  const hasExternal = useMemo(() => filtered.some((i) => !i.department), [filtered]);
 
-  const approvalPerDept = useMemo(
-    () =>
-      DEPARTMENTS.map((dept) => {
-        const list = filtered.filter((i) => i.department === dept);
-        return {
-          dept: DEPT_SHORT[dept],
-          Approved: list.filter((i) => APPROVED_STATUSES.includes(i.status)).length,
-          Rejected: list.filter((i) => i.status === 'Not Feasible').length,
-          Pending: list.filter((i) => i.status === 'Pending Validation').length,
-        };
-      }),
-    [filtered]
-  );
+  const perDept = useMemo(() => {
+    const rows: { dept: string; fullDept: string; ideas: number }[] = DEPARTMENTS.map((dept) => ({
+      dept: DEPT_SHORT[dept],
+      fullDept: dept as string,
+      ideas: filtered.filter((i) => i.department === dept).length,
+    }));
+    const externalCount = filtered.filter((i) => !i.department).length;
+    if (externalCount > 0) rows.push({ dept: EXTERNAL_LABEL, fullDept: EXTERNAL_LABEL, ideas: externalCount });
+    return rows;
+  }, [filtered]);
+
+  const approvalPerDept = useMemo(() => {
+    const rows = DEPARTMENTS.map((dept) => {
+      const list = filtered.filter((i) => i.department === dept);
+      return {
+        dept: DEPT_SHORT[dept],
+        Approved: list.filter((i) => APPROVED_STATUSES.includes(i.status)).length,
+        Rejected: list.filter((i) => i.status === 'Not Feasible').length,
+        Pending: list.filter((i) => i.status === 'Pending Validation').length,
+      };
+    });
+    const ext = filtered.filter((i) => !i.department);
+    if (ext.length > 0) {
+      rows.push({
+        dept: EXTERNAL_LABEL,
+        Approved: ext.filter((i) => APPROVED_STATUSES.includes(i.status)).length,
+        Rejected: ext.filter((i) => i.status === 'Not Feasible').length,
+        Pending: ext.filter((i) => i.status === 'Pending Validation').length,
+      });
+    }
+    return rows;
+  }, [filtered]);
 
   const monthlyTrend = useMemo(() => {
     const keys = [...new Set(filtered.map((i) => monthKey(i.createdAt)))].sort();
@@ -120,6 +135,7 @@ export function Dashboard() {
       for (const dept of DEPARTMENTS) {
         row[DEPT_SHORT[dept]] = filtered.filter((i) => i.department === dept && monthKey(i.createdAt) === key).length;
       }
+      row[EXTERNAL_LABEL] = filtered.filter((i) => !i.department && monthKey(i.createdAt) === key).length;
       return row;
     });
   }, [filtered]);
@@ -253,7 +269,7 @@ export function Dashboard() {
               <Tooltip contentStyle={tooltipStyle} cursor={{ fill: 'rgba(15,118,110,0.05)' }} />
               <Bar dataKey="ideas" name="Ideas" radius={[4, 4, 0, 0]} barSize={34}>
                 {perDept.map((d) => (
-                  <Cell key={d.dept} fill={DEPT_COLORS[d.fullDept as Department]} />
+                  <Cell key={d.dept} fill={d.fullDept === EXTERNAL_LABEL ? EXTERNAL_COLOR : DEPT_COLORS[d.fullDept as Department]} />
                 ))}
               </Bar>
             </BarChart>
@@ -297,6 +313,17 @@ export function Dashboard() {
                   activeDot={{ r: 4 }}
                 />
               ))}
+              {hasExternal && (
+                <Line
+                  key={EXTERNAL_LABEL}
+                  type="monotone"
+                  dataKey={EXTERNAL_LABEL}
+                  stroke={EXTERNAL_COLOR}
+                  strokeWidth={2}
+                  dot={false}
+                  activeDot={{ r: 4 }}
+                />
+              )}
             </LineChart>
           </ResponsiveContainer>
         </ChartCard>

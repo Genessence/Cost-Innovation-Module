@@ -1,5 +1,7 @@
 export type Role = 'submitter' | 'validator';
 
+export type SubmitterType = 'employee' | 'vendor';
+
 export const DEPARTMENTS = [
   'Research & Development',
   'Sourcing',
@@ -16,7 +18,9 @@ export interface User {
   email: string;
   password: string;
   role: Role;
-  department: Department;
+  submitterType?: SubmitterType; // only present when role === 'submitter'
+  department?: Department; // present for employee submitters & validators
+  organization?: string; // present for vendor submitters (their company name)
   designation: string;
 }
 
@@ -43,15 +47,44 @@ export interface PartCode {
 }
 
 export const COST_INNOVATION_TYPES = [
-  'Raw Material Change',
-  'Power/Energy Optimization',
-  'Process Improvement',
-  'Supplier/Sourcing Change',
-  'Design Optimization',
-  'Packaging & Logistics',
-  'Scrap/Wastage Reduction',
+  'Negotiations',
+  'Value Engineering',
+  'Cost Engineering',
+  'Alternate Material / Suppliers',
+  'Payment Terms',
+  'Packing Standard Implementation',
+  'Alternate Supplier',
+  'Freight Operations',
+  'Strategic Masking',
+  'Localization',
+  'Scrap Management',
+  'Process Optimization',
+  'Forex Determination',
+  'Dimensional Correction',
+  'Tolerance Update',
+  'Volume Control',
+  'Digitalization and Optimization',
 ] as const;
 export type CostInnovationType = (typeof COST_INNOVATION_TYPES)[number];
+
+export const COMMODITIES = [
+  'Aluminium',
+  'Copper',
+  'Steel (CRCA / GI)',
+  'Polypropylene (PP)',
+  'ABS Plastic',
+  'NBR / EPDM Rubber',
+  'EPS / PE Foam',
+  'PCB / Electronics',
+  'Wiring & Harness',
+  'Fasteners',
+  'Packaging Material',
+  'Refrigerant (R32 / R410A)',
+  'Logistics / Freight',
+  'Energy / Utilities',
+  'Others',
+] as const;
+export type Commodity = (typeof COMMODITIES)[number];
 
 export const IDEA_STATUSES = [
   'Pending Validation',
@@ -119,11 +152,14 @@ export interface Idea {
   id: string; // e.g. CI-2026-0041
   title: string;
   submittedBy: string; // user id
-  department: Department;
+  department?: Department; // undefined for vendor-submitted ideas
+  organization?: string; // present for vendor-submitted ideas
+  submitterType?: SubmitterType; // 'employee' | 'vendor'
   partCodes: string[]; // PartCode.code values
   description: string;
   photo?: string; // data URL / object URL
   costInnovationType: CostInnovationType;
+  commodity?: Commodity;
   expectedImpact: ExpectedImpact;
   status: IdeaStatus;
   remarks?: string; // latest validator remarks

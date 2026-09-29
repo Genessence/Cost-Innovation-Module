@@ -16,12 +16,13 @@ import { StatusBadge } from '../components/StatusBadge';
 import { EmptyState } from '../components/EmptyState';
 import { formatDate, formatINRCompact } from '../utils/format';
 
-type SortKey = 'id' | 'title' | 'department' | 'type' | 'status' | 'saving' | 'createdAt';
+type SortKey = 'id' | 'title' | 'department' | 'commodity' | 'type' | 'status' | 'saving' | 'createdAt';
 
 const SORT_ACCESSORS: Record<SortKey, (i: Idea) => string | number> = {
   id: (i) => i.id,
   title: (i) => i.title.toLowerCase(),
-  department: (i) => i.department,
+  department: (i) => i.department ?? i.organization ?? 'External Vendor',
+  commodity: (i) => i.commodity ?? '',
   type: (i) => i.costInnovationType,
   status: (i) => i.status,
   saving: (i) => i.mrnVerification?.actualAnnualSaving ?? i.expectedImpact.expectedAnnualSaving,
@@ -32,6 +33,7 @@ const COLUMNS: { key: SortKey; label: string }[] = [
   { key: 'id', label: 'ID' },
   { key: 'title', label: 'Idea' },
   { key: 'department', label: 'Department' },
+  { key: 'commodity', label: 'Commodity' },
   { key: 'type', label: 'Type' },
   { key: 'status', label: 'Status' },
   { key: 'saving', label: 'Annual saving' },
@@ -76,7 +78,7 @@ export function AllIdeas() {
     if (sortKey === key) setSortAsc((a) => !a);
     else {
       setSortKey(key);
-      setSortAsc(key === 'title' || key === 'department' || key === 'type');
+      setSortAsc(key === 'title' || key === 'department' || key === 'commodity' || key === 'type');
     }
   }
 
@@ -120,7 +122,7 @@ export function AllIdeas() {
         <EmptyState icon={FileSearch} title="No ideas found" message="Try adjusting the search or filters." />
       ) : (
         <div className="card overflow-x-auto">
-          <table className="w-full min-w-[900px] text-sm">
+          <table className="w-full min-w-[1000px] text-sm">
             <thead>
               <tr className="border-b border-slate-200 text-left text-xs uppercase tracking-wide text-slate-400">
                 {COLUMNS.map(({ key, label }) => (
@@ -155,7 +157,8 @@ export function AllIdeas() {
                       {userName(idea.submittedBy)} · {idea.partCodes.join(', ')}
                     </p>
                   </td>
-                  <td className="px-4 py-3 text-slate-600">{idea.department}</td>
+                  <td className="px-4 py-3 text-slate-600">{idea.department ?? idea.organization ?? 'External Vendor'}</td>
+                  <td className="px-4 py-3 text-xs text-slate-600">{idea.commodity ?? '—'}</td>
                   <td className="px-4 py-3 text-xs text-slate-600">{idea.costInnovationType}</td>
                   <td className="px-4 py-3">
                     <StatusBadge status={idea.status} />
