@@ -17,6 +17,7 @@ import { useAuthStore } from '../store/auth';
 import { USERS } from '../data/users';
 import illustration from '../assets/login-illustration.png';
 import amberLogo from '../assets/amber-logo.png';
+import sprig from '../assets/login-sprig.png';
 
 const STEPS: { icon: LucideIcon; label: string; caption: string }[] = [
   { icon: Lightbulb, label: 'Submit', caption: 'Capture cost-saving ideas' },
@@ -76,7 +77,20 @@ export function Login() {
   }
 
   return (
-    <div className="min-h-screen w-full lg:grid lg:grid-cols-[1.05fr_0.95fr]">
+    <div className="relative min-h-screen w-full overflow-hidden lg:grid lg:grid-cols-[1.05fr_0.95fr]">
+      {/* Ambient background: soft peach blobs, a warm ground band, and a faint sprig */}
+      <div aria-hidden="true" className="pointer-events-none absolute inset-0 -z-10 overflow-hidden">
+        <div className="absolute -top-32 left-[34%] h-[560px] w-[640px] rounded-full bg-[#F4D8C4]/50 blur-[90px]" />
+        <div className="absolute top-[24%] -left-28 h-[400px] w-[400px] rounded-full bg-[#F6DFD0]/60 blur-[80px]" />
+        <div className="absolute -right-16 top-[6%] h-[440px] w-[440px] rounded-full bg-[#F1D3BE]/45 blur-[90px]" />
+        <div className="absolute -bottom-48 left-1/2 h-[520px] w-[150%] -translate-x-1/2 rounded-[50%] bg-[#EBD2BD]/45 blur-[70px]" />
+        <img
+          src={sprig}
+          alt=""
+          className="absolute right-0 top-[20%] hidden h-[58%] w-auto select-none opacity-90 lg:block"
+        />
+      </div>
+
       {/* ── Left: brand story ─────────────────────────────────────────── */}
       <section className="relative hidden overflow-hidden px-12 py-12 xl:px-20 xl:py-16 lg:flex lg:flex-col lg:justify-between">
         <Brand />
