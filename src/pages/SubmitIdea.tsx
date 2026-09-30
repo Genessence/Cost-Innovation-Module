@@ -252,8 +252,10 @@ export function SubmitIdea() {
         </div>
       </section>
 
-      {/* Section 2: Part code(s) */}
-      <section className="card p-6">
+      {/* Section 2: Part code(s) — raised above later cards so the search
+          results dropdown isn't clipped behind Section 3 (each .card is its
+          own stacking context via backdrop-blur). */}
+      <section className="card relative z-20 p-6">
         <h2 className="text-base font-semibold text-slate-900">2 · Part code(s)</h2>
         <p className="mt-0.5 text-sm text-slate-500">Search the ERP part master and link one or more part codes.</p>
         <div className="relative mt-4">
