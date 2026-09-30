@@ -19,8 +19,8 @@ import { QUARTERS } from '../../data/mrnRecords';
 
 const tooltipStyle = {
   borderRadius: 10,
-  border: '1px solid #E2E8F0',
-  boxShadow: '0 8px 24px rgba(15,23,42,.10)',
+  border: '1px solid #E7DBCB',
+  boxShadow: '0 8px 24px rgba(120,88,56,.16)',
   fontSize: 12.5,
 };
 
@@ -187,7 +187,7 @@ export function CoDashboard() {
                 <XAxis dataKey="quarter" tick={{ fontSize: 12, fill: CHART_AXIS }} axisLine={{ stroke: CHART_GRID }} tickLine={false} />
                 <YAxis tickFormatter={(v: number) => formatINRCompact(v)} tick={{ fontSize: 11, fill: CHART_AXIS }} axisLine={false} tickLine={false} width={70} />
                 <Tooltip contentStyle={tooltipStyle} cursor={{ fill: 'rgba(5,150,105,0.06)' }} formatter={(v) => [formatINRCompact(Number(v)), 'Verified saving']} />
-                <Bar dataKey="saving" name="Verified saving" fill="#059669" radius={[4, 4, 0, 0]} barSize={48} />
+                <Bar dataKey="saving" name="Verified saving" fill="#4E7358" radius={[4, 4, 0, 0]} barSize={48} />
               </BarChart>
             </ResponsiveContainer>
           </div>
@@ -195,7 +195,7 @@ export function CoDashboard() {
 
         <div className="card p-5">
           <h3 className="text-sm font-semibold text-slate-800">Savings realization by idea</h3>
-          <p className="mt-0.5 text-xs text-slate-400">Top verified ideas · teal = met/beat expected, amber = under</p>
+          <p className="mt-0.5 text-xs text-slate-400">Top verified ideas · green = met/beat expected, amber = under</p>
           <div className="mt-4">
             {byIdea.length === 0 ? (
               <p className="py-16 text-center text-sm text-slate-400">No verified ideas yet.</p>
@@ -212,10 +212,10 @@ export function CoDashboard() {
                     axisLine={false}
                     tickLine={false}
                   />
-                  <Tooltip contentStyle={tooltipStyle} cursor={{ fill: 'rgba(15,118,110,0.05)' }} formatter={(v) => [formatINRCompact(Number(v)), 'Actual saving']} />
+                  <Tooltip contentStyle={tooltipStyle} cursor={{ fill: 'rgba(198,112,74,0.07)' }} formatter={(v) => [formatINRCompact(Number(v)), 'Actual saving']} />
                   <Bar dataKey="saving" name="Actual saving" radius={[0, 4, 4, 0]} barSize={20}>
                     {byIdea.map((d) => (
-                      <Cell key={d.id} fill={d.variance >= 0 ? '#0F766E' : '#D97706'} />
+                      <Cell key={d.id} fill={d.variance >= 0 ? '#4E7358' : '#B0782B'} />
                     ))}
                   </Bar>
                 </BarChart>

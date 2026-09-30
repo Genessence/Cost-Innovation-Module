@@ -31,7 +31,7 @@ export function SideDrawer({ open, onClose, title, children, footer }: SideDrawe
   return (
     <div className="fixed inset-0 z-50">
       <div className="absolute inset-0 bg-slate-900/40" onClick={onClose} />
-      <aside className="absolute inset-y-0 right-0 flex w-full max-w-[480px] flex-col bg-white shadow-lifted">
+      <aside className="absolute inset-y-0 right-0 flex w-full max-w-[480px] flex-col bg-surface shadow-lifted">
         <header className="flex items-start justify-between gap-3 border-b border-slate-200 px-5 py-4">
           <div className="min-w-0">{title}</div>
           <button className="rounded p-1 text-slate-400 hover:bg-slate-100" onClick={onClose} aria-label="Close">

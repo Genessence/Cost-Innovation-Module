@@ -10,12 +10,12 @@ const STATUS_STYLES: Record<IdeaStatus, string> = {
 };
 
 export const STATUS_DOT_COLORS: Record<IdeaStatus, string> = {
-  'Pending Validation': '#D97706',
-  Feasible: '#0F766E',
-  'Not Feasible': '#DC2626',
-  'In Execution': '#2563EB',
-  Implemented: '#4F46E5',
-  Verified: '#059669',
+  'Pending Validation': '#B0782B',
+  Feasible: '#C6704A',
+  'Not Feasible': '#B24A34',
+  'In Execution': '#5A6E8C',
+  Implemented: '#6E5C74',
+  Verified: '#4E7358',
 };
 
 export function StatusBadge({ status }: { status: IdeaStatus }) {

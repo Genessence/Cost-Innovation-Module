@@ -34,7 +34,7 @@ const DEPT_SHORT: Record<Department, string> = {
 // Synthetic grouping bucket for vendor-submitted ideas (no department).
 // Chart-only — deliberately NOT added to the DEPARTMENTS const.
 const EXTERNAL_LABEL = 'External';
-const EXTERNAL_COLOR = '#374151';
+const EXTERNAL_COLOR = '#8A7D6D';
 
 const RANGES = [
   { key: 'all', label: 'All time', months: Infinity },
@@ -45,8 +45,8 @@ const RANGES = [
 
 const tooltipStyle = {
   borderRadius: 10,
-  border: '1px solid #E2E8F0',
-  boxShadow: '0 8px 24px rgba(15,23,42,.10)',
+  border: '1px solid #E7DBCB',
+  boxShadow: '0 8px 24px rgba(120,88,56,.16)',
   fontSize: 12.5,
 };
 
@@ -215,7 +215,7 @@ export function Dashboard() {
             <option key={t}>{t}</option>
           ))}
         </select>
-        <div className="flex rounded-lg border border-slate-200 bg-white p-0.5">
+        <div className="flex rounded-lg border border-slate-200 bg-surface p-0.5">
           {RANGES.map((r) => (
             <button
               key={r.key}
@@ -232,25 +232,26 @@ export function Dashboard() {
 
       {/* Hero + KPI cards */}
       <div className="grid gap-4 lg:grid-cols-3">
-        <div className="rounded-xl bg-primary-dark p-6 text-white shadow-card lg:row-span-1">
-          <div className="flex items-center gap-2 text-teal-200/80">
+        <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-primary to-primary-dark p-6 text-white shadow-lifted lg:row-span-1">
+          <div className="pointer-events-none absolute -right-8 -top-10 h-40 w-40 rounded-full bg-primary-accent/30 blur-2xl" />
+          <div className="relative flex items-center gap-2 text-white/80">
             <IndianRupee size={16} />
-            <p className="text-xs font-medium uppercase tracking-wider">Total cost saved · verified via MRN</p>
+            <p className="text-xs font-semibold uppercase tracking-[0.14em]">Total cost saved · verified via MRN</p>
           </div>
-          <p className="mt-3 text-4xl font-semibold tracking-tight">{formatINRCompact(totalVerifiedSavings)}</p>
-          <p className="mt-2 text-sm text-teal-100/70">
+          <p className="stat-num relative mt-3 text-4xl font-bold">{formatINRCompact(totalVerifiedSavings)}</p>
+          <p className="relative mt-2 text-sm text-white/75">
             Annualized savings from {verifiedIdeas.length} verified idea{verifiedIdeas.length !== 1 ? 's' : ''} since
             implementation
           </p>
         </div>
         <div className="grid grid-cols-2 gap-4 lg:col-span-2">
           {kpis.map(({ label, value, icon: Icon, cls }) => (
-            <div key={label} className="card flex items-center gap-3.5 p-4">
-              <div className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-lg ${cls}`}>
+            <div key={label} className="card-interactive flex items-center gap-3.5 p-4">
+              <div className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-xl ${cls}`}>
                 <Icon size={20} />
               </div>
               <div className="min-w-0">
-                <p className="truncate text-xl font-semibold text-slate-900">{value}</p>
+                <p className="stat-num truncate text-xl font-semibold text-slate-900">{value}</p>
                 <p className="truncate text-xs text-slate-500">{label}</p>
               </div>
             </div>
@@ -266,7 +267,7 @@ export function Dashboard() {
               <CartesianGrid strokeDasharray="0" stroke={CHART_GRID} vertical={false} />
               <XAxis dataKey="dept" tick={{ fontSize: 12, fill: CHART_AXIS }} axisLine={{ stroke: CHART_GRID }} tickLine={false} />
               <YAxis allowDecimals={false} tick={{ fontSize: 12, fill: CHART_AXIS }} axisLine={false} tickLine={false} />
-              <Tooltip contentStyle={tooltipStyle} cursor={{ fill: 'rgba(15,118,110,0.05)' }} />
+              <Tooltip contentStyle={tooltipStyle} cursor={{ fill: 'rgba(198,112,74,0.07)' }} />
               <Bar dataKey="ideas" name="Ideas" radius={[4, 4, 0, 0]} barSize={34}>
                 {perDept.map((d) => (
                   <Cell key={d.dept} fill={d.fullDept === EXTERNAL_LABEL ? EXTERNAL_COLOR : DEPT_COLORS[d.fullDept as Department]} />
@@ -282,7 +283,7 @@ export function Dashboard() {
               <CartesianGrid stroke={CHART_GRID} vertical={false} />
               <XAxis dataKey="dept" tick={{ fontSize: 12, fill: CHART_AXIS }} axisLine={{ stroke: CHART_GRID }} tickLine={false} />
               <YAxis allowDecimals={false} tick={{ fontSize: 12, fill: CHART_AXIS }} axisLine={false} tickLine={false} />
-              <Tooltip contentStyle={tooltipStyle} cursor={{ fill: 'rgba(15,118,110,0.05)' }} />
+              <Tooltip contentStyle={tooltipStyle} cursor={{ fill: 'rgba(198,112,74,0.07)' }} />
               <Legend wrapperStyle={{ fontSize: 12 }} iconType="circle" iconSize={9} />
               <Bar dataKey="Approved" stackId="a" fill={APPROVAL_COLORS.approved} barSize={34} stroke="#fff" strokeWidth={2} />
               <Bar dataKey="Rejected" stackId="a" fill={APPROVAL_COLORS.rejected} stroke="#fff" strokeWidth={2} />
@@ -368,7 +369,7 @@ export function Dashboard() {
                 <XAxis dataKey="month" tick={{ fontSize: 11, fill: CHART_AXIS }} axisLine={{ stroke: CHART_GRID }} tickLine={false} />
                 <YAxis tickFormatter={(v: number) => formatINRCompact(v)} tick={{ fontSize: 11, fill: CHART_AXIS }} axisLine={false} tickLine={false} width={70} />
                 <Tooltip contentStyle={tooltipStyle} formatter={(v) => [formatINRCompact(Number(v)), 'Cumulative savings']} />
-                <Line type="monotone" dataKey="cumulative" stroke="#0F766E" strokeWidth={2.5} dot={{ r: 3.5, fill: '#0F766E' }} activeDot={{ r: 5 }} />
+                <Line type="monotone" dataKey="cumulative" stroke="#BC6A47" strokeWidth={2.5} dot={{ r: 3.5, fill: '#BC6A47' }} activeDot={{ r: 5 }} />
               </LineChart>
             </ResponsiveContainer>
           )}

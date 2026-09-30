@@ -31,7 +31,7 @@ export function CenterModal({ open, onClose, title, children, footer }: CenterMo
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
       <div className="absolute inset-0 bg-slate-900/40" onClick={onClose} />
-      <div className="relative flex max-h-[90vh] w-full max-w-xl flex-col rounded-xl bg-white shadow-lifted">
+      <div className="relative flex max-h-[90vh] w-full max-w-xl flex-col rounded-xl bg-surface shadow-lifted">
         <header className="flex items-start justify-between gap-3 border-b border-slate-200 px-5 py-4">
           <div className="min-w-0">{title}</div>
           <button className="rounded p-1 text-slate-400 hover:bg-slate-100" onClick={onClose} aria-label="Close">

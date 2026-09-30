@@ -33,14 +33,14 @@ const APPROVED_STATUSES = ['Feasible', 'In Execution', 'Implemented', 'Verified'
 
 // Pipeline funnel stages, in flow order, with their status color.
 const FUNNEL_STAGES: { status: string; label: string; color: string }[] = [
-  { status: 'Pending Validation', label: 'Pending', color: '#D97706' },
-  { status: 'Feasible', label: 'Feasible', color: '#0F766E' },
-  { status: 'In Execution', label: 'In Execution', color: '#2563EB' },
-  { status: 'Implemented', label: 'Implemented', color: '#4F46E5' },
-  { status: 'Verified', label: 'Verified', color: '#059669' },
+  { status: 'Pending Validation', label: 'Pending', color: '#B0782B' },
+  { status: 'Feasible', label: 'Feasible', color: '#C6704A' },
+  { status: 'In Execution', label: 'In Execution', color: '#5A6E8C' },
+  { status: 'Implemented', label: 'Implemented', color: '#6E5C74' },
+  { status: 'Verified', label: 'Verified', color: '#4E7358' },
 ];
 
-const MEDALS = ['#EAB308', '#94A3B8', '#B45309']; // gold, silver, bronze
+const MEDALS = ['#C9963B', '#AE9F8E', '#8C5E1E']; // gold, silver, bronze
 
 function rateColor(rate: number): string {
   if (rate >= 60) return 'text-emerald-600';
@@ -61,7 +61,7 @@ function QualityTooltip({ active, payload }: { active?: boolean; payload?: { pay
   const d = payload[0].payload;
   const rate = d.total > 0 ? Math.round((d.approved / d.total) * 100) : 0;
   return (
-    <div className="rounded-lg border border-slate-200 bg-white px-3 py-2 text-xs shadow-lifted">
+    <div className="rounded-lg border border-slate-200 bg-surface px-3 py-2 text-xs shadow-lifted">
       <p className="font-semibold text-slate-800">{d.full}</p>
       <p className="mt-1 text-slate-600">Submitted: {d.total}</p>
       <p className="text-teal-700">Approved: {d.approved}</p>
@@ -301,9 +301,9 @@ export function CiDashboard() {
               <CartesianGrid stroke={CHART_GRID} horizontal={false} />
               <XAxis type="number" allowDecimals={false} tick={{ fontSize: 11, fill: CHART_AXIS }} axisLine={false} tickLine={false} />
               <YAxis type="category" dataKey="source" width={80} tick={{ fontSize: 12, fill: CHART_AXIS }} axisLine={false} tickLine={false} />
-              <Tooltip content={<QualityTooltip />} cursor={{ fill: 'rgba(15,118,110,0.05)' }} />
-              <Bar dataKey="approved" name="Approved" stackId="q" fill="#0F766E" barSize={22} radius={[0, 0, 0, 0]} />
-              <Bar dataKey="rejected" name="Rejected" stackId="q" fill="#DC2626" barSize={22} radius={[0, 4, 4, 0]} />
+              <Tooltip content={<QualityTooltip />} cursor={{ fill: 'rgba(198,112,74,0.07)' }} />
+              <Bar dataKey="approved" name="Approved" stackId="q" fill="#4E7358" barSize={22} radius={[0, 0, 0, 0]} />
+              <Bar dataKey="rejected" name="Rejected" stackId="q" fill="#B24A34" barSize={22} radius={[0, 4, 4, 0]} />
             </BarChart>
           </ResponsiveContainer>
         </div>

@@ -213,7 +213,7 @@ export function SubmitIdea() {
               <div className="relative inline-block">
                 <img src={photo} alt="Idea attachment" className="h-40 rounded-lg border border-slate-200 object-cover" />
                 <button
-                  className="absolute -right-2 -top-2 rounded-full bg-white p-1.5 text-slate-500 shadow-card ring-1 ring-slate-200 hover:text-red-600"
+                  className="absolute -right-2 -top-2 rounded-full bg-surface p-1.5 text-slate-500 shadow-card ring-1 ring-slate-200 hover:text-red-600"
                   onClick={() => setPhoto(undefined)}
                   aria-label="Remove photo"
                 >
@@ -270,7 +270,7 @@ export function SubmitIdea() {
             onBlur={() => setTimeout(() => setDropdownOpen(false), 150)}
           />
           {dropdownOpen && matches.length > 0 && (
-            <div className="absolute z-10 mt-1 max-h-72 w-full overflow-y-auto rounded-lg border border-slate-200 bg-white shadow-lifted">
+            <div className="absolute z-10 mt-1 max-h-72 w-full overflow-y-auto rounded-lg border border-slate-200 bg-surface shadow-lifted">
               {matches.map((p) => (
                 <button
                   key={p.code}

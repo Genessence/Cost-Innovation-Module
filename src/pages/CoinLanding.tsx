@@ -1,9 +1,10 @@
 import { useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ArrowRight, Coins, Lightbulb, TrendingDown } from 'lucide-react';
+import { ArrowRight, Lightbulb, TrendingDown } from 'lucide-react';
 import { useAuthStore } from '../store/auth';
 import { useAppStore } from '../store/app';
 import { formatINRCompact } from '../utils/format';
+import amberLogo from '../assets/amber-logo.png';
 
 /**
  * COIN module selector — the first screen validators see after login.
@@ -26,14 +27,13 @@ export function CoinLanding() {
   }, [ideas]);
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-paper px-4 py-10">
-      <div className="w-full max-w-3xl">
+    <div className="flex min-h-screen items-center justify-center px-4 py-10">
+      <div className="w-full max-w-3xl animate-fade-up">
         {/* Wordmark */}
         <div className="text-center">
-          <div className="inline-flex items-center gap-2.5">
-            <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary text-white">
-              <Coins size={20} />
-            </div>
+          <div className="inline-flex items-center gap-3">
+            <img src={amberLogo} alt="Amber" className="h-8 w-auto" />
+            <span className="h-8 w-px bg-slate-200" />
             <span className="text-xl font-bold tracking-tight text-slate-900">COIN</span>
           </div>
           <p className="mt-2 text-sm text-slate-500">Cost Optimization & Innovation Platform</p>
@@ -45,7 +45,7 @@ export function CoinLanding() {
         {/* Module cards */}
         <div className="mt-8 flex flex-col items-center justify-center gap-6 sm:flex-row sm:items-stretch">
           {/* CO — Cost Optimization */}
-          <div className="w-full max-w-[340px] rounded-2xl border border-blue-200 bg-white p-8 shadow-card">
+          <div className="w-full max-w-[340px] rounded-2xl border border-blue-200/70 bg-surface/90 p-8 shadow-card backdrop-blur-sm transition-all duration-200 hover:-translate-y-1 hover:shadow-lifted">
             <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-blue-50 text-blue-600">
               <TrendingDown size={24} />
             </div>
@@ -59,11 +59,11 @@ export function CoinLanding() {
 
             <div className="flex items-start justify-between gap-3">
               <div>
-                <p className="text-lg font-semibold text-slate-900">{stats.awaitingMrn}</p>
+                <p className="stat-num text-lg font-semibold text-slate-900">{stats.awaitingMrn}</p>
                 <p className="text-[11px] text-slate-500">Awaiting Verification</p>
               </div>
               <div className="text-right">
-                <p className="text-lg font-semibold text-emerald-700">{formatINRCompact(stats.verifiedSavings)}</p>
+                <p className="stat-num text-lg font-semibold text-emerald-700">{formatINRCompact(stats.verifiedSavings)}</p>
                 <p className="text-[11px] text-slate-500">Verified Savings</p>
               </div>
             </div>
@@ -77,7 +77,7 @@ export function CoinLanding() {
           </div>
 
           {/* CI — Cost Innovation */}
-          <div className="w-full max-w-[340px] rounded-2xl border border-primary/30 bg-white p-8 shadow-card">
+          <div className="w-full max-w-[340px] rounded-2xl border border-primary/30 bg-surface/90 p-8 shadow-card backdrop-blur-sm transition-all duration-200 hover:-translate-y-1 hover:shadow-lifted">
             <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-primary-light text-primary-dark">
               <Lightbulb size={24} />
             </div>
@@ -91,11 +91,11 @@ export function CoinLanding() {
 
             <div className="flex items-start justify-between gap-3">
               <div>
-                <p className="text-lg font-semibold text-amber-600">{stats.pending}</p>
+                <p className="stat-num text-lg font-semibold text-amber-600">{stats.pending}</p>
                 <p className="text-[11px] text-slate-500">Pending Review</p>
               </div>
               <div className="text-right">
-                <p className="text-lg font-semibold text-blue-700">{stats.inExecution}</p>
+                <p className="stat-num text-lg font-semibold text-blue-700">{stats.inExecution}</p>
                 <p className="text-[11px] text-slate-500">In Execution</p>
               </div>
             </div>

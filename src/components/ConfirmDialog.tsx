@@ -16,7 +16,7 @@ export function ConfirmDialog({ open, title, message, confirmLabel, danger, onCo
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
       <div className="absolute inset-0 bg-slate-900/40" onClick={onCancel} />
-      <div className="relative w-full max-w-md rounded-xl bg-white p-6 shadow-lifted">
+      <div className="relative w-full max-w-md rounded-xl bg-surface p-6 shadow-lifted">
         <div className="flex items-start gap-3">
           {danger && (
             <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-red-50">

@@ -6,29 +6,77 @@
   html {
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
   }
+
   body {
-    @apply bg-paper text-slate-700 font-sans;
+    @apply text-slate-700 font-sans;
+    /* Warm ambient atmosphere: two very subtle peach/beige glows over a
+       cream base. The user should feel the warmth, not see gradient shapes. */
+    background-color: #F7EFE7;
+    background-image:
+      radial-gradient(1100px 620px at 12% -8%, rgba(248, 211, 191, 0.45), transparent 60%),
+      radial-gradient(1000px 680px at 100% 8%, rgba(243, 235, 223, 0.7), transparent 55%),
+      radial-gradient(900px 700px at 55% 115%, rgba(233, 219, 203, 0.4), transparent 60%);
+    background-attachment: fixed;
+    min-height: 100vh;
+  }
+
+  /* Warm, on-theme selection + focus, never browser-blue. */
+  ::selection {
+    background: rgba(232, 161, 124, 0.35);
   }
 }
 
 @layer components {
+  /* ── Surfaces ─────────────────────────────────────────────────────── */
   .card {
-    @apply bg-white rounded-xl border border-slate-200/80 shadow-card;
+    @apply rounded-2xl border border-slate-200/70 bg-surface/90 shadow-card backdrop-blur-sm;
   }
+  /* Interactive card: subtle lift + peach-tinted glow on hover. */
+  .card-interactive {
+    @apply card transition-all duration-200 hover:-translate-y-0.5 hover:border-primary-accent/50 hover:shadow-lifted;
+  }
+  /* Frosted rails/bars sitting over the warm canvas. */
+  .glass-panel {
+    @apply border-slate-200/70 bg-surface-muted/80 backdrop-blur-xl;
+  }
+  .glass-sidebar {
+    background-color: rgba(251, 246, 240, 0.82);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border-right: 1px solid rgba(231, 219, 203, 0.8);
+    box-shadow: 1px 0 24px rgba(120, 88, 56, 0.05);
+  }
+
+  /* ── Buttons ──────────────────────────────────────────────────────── */
   .btn-primary {
-    @apply inline-flex items-center justify-center gap-2 rounded-lg bg-primary px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-primary-dark focus:outline-none focus:ring-2 focus:ring-primary-accent focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50;
+    @apply inline-flex items-center justify-center gap-2 rounded-lg bg-gradient-to-br from-primary to-primary-dark px-4 py-2 text-sm font-medium text-white shadow-sm transition-all hover:shadow-md hover:brightness-[1.04] focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-accent focus-visible:ring-offset-2 focus-visible:ring-offset-surface disabled:cursor-not-allowed disabled:opacity-50;
   }
   .btn-secondary {
-    @apply inline-flex items-center justify-center gap-2 rounded-lg border border-slate-300 bg-white px-4 py-2 text-sm font-medium text-slate-700 transition-colors hover:bg-slate-50 focus:outline-none focus:ring-2 focus:ring-primary-accent focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50;
+    @apply inline-flex items-center justify-center gap-2 rounded-lg border border-slate-300 bg-surface/80 px-4 py-2 text-sm font-medium text-slate-700 transition-colors hover:bg-primary-light/50 hover:border-primary-accent/50 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-accent focus-visible:ring-offset-2 focus-visible:ring-offset-surface disabled:cursor-not-allowed disabled:opacity-50;
+  }
+  .btn-ghost {
+    @apply inline-flex items-center justify-center gap-2 rounded-lg px-4 py-2 text-sm font-medium text-slate-600 transition-colors hover:bg-primary-light/60 hover:text-slate-900 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-accent focus-visible:ring-offset-2 focus-visible:ring-offset-surface disabled:cursor-not-allowed disabled:opacity-50;
   }
   .btn-danger {
-    @apply inline-flex items-center justify-center gap-2 rounded-lg bg-red-600 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-400 focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50;
+    @apply inline-flex items-center justify-center gap-2 rounded-lg bg-red-600 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-red-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-red-400 focus-visible:ring-offset-2 focus-visible:ring-offset-surface disabled:cursor-not-allowed disabled:opacity-50;
   }
+
+  /* ── Form controls ────────────────────────────────────────────────── */
   .input {
-    @apply w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-800 placeholder:text-slate-400 focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary;
+    @apply w-full rounded-lg border border-slate-300 bg-surface px-3 py-2 text-sm text-slate-800 placeholder:text-slate-400 transition-colors focus:border-primary-accent focus:outline-none focus:ring-2 focus:ring-primary-accent/40;
   }
   .label {
     @apply mb-1.5 block text-sm font-medium text-slate-700;
+  }
+
+  /* ── Micro-labels & numerics ──────────────────────────────────────── */
+  .eyebrow {
+    @apply text-[11px] font-semibold uppercase tracking-[0.14em] text-slate-500;
+  }
+  .stat-num {
+    @apply font-mono tabular-nums tracking-tight;
+    font-feature-settings: 'tnum' 1;
   }
 }

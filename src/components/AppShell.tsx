@@ -80,13 +80,13 @@ export function AppShell({ sidebar }: { sidebar: ReactNode }) {
       {/* Mobile sidebar */}
       {mobileNavOpen && (
         <div className="fixed inset-0 z-40 lg:hidden">
-          <div className="absolute inset-0 bg-slate-900/50" onClick={() => setMobileNavOpen(false)} />
+          <div className="absolute inset-0 bg-slate-900/40 backdrop-blur-sm" onClick={() => setMobileNavOpen(false)} />
           <aside className="absolute inset-y-0 left-0 w-64">{sidebar}</aside>
         </div>
       )}
 
       <div className="flex min-w-0 flex-1 flex-col lg:pl-60">
-        <header className="sticky top-0 z-20 flex h-16 items-center gap-3 border-b border-slate-200 bg-white/90 px-4 backdrop-blur sm:px-6">
+        <header className="glass-panel sticky top-0 z-20 flex h-16 items-center gap-3 border-b px-4 sm:px-6">
           <button className="rounded-lg p-2 text-slate-500 hover:bg-slate-100 lg:hidden" onClick={() => setMobileNavOpen(true)} aria-label="Open menu">
             <Menu size={20} />
           </button>
@@ -109,7 +109,7 @@ export function AppShell({ sidebar }: { sidebar: ReactNode }) {
                 )}
               </button>
               {bellOpen && (
-                <div className="absolute right-0 mt-2 w-80 rounded-xl border border-slate-200 bg-white shadow-lifted">
+                <div className="absolute right-0 mt-2 w-80 rounded-xl border border-slate-200 bg-surface shadow-lifted">
                   <div className="flex items-center justify-between border-b border-slate-100 px-4 py-3">
                     <p className="text-sm font-semibold text-slate-800">Notifications</p>
                     <button className="rounded p-1 text-slate-400 hover:bg-slate-100" onClick={() => setBellOpen(false)}>
