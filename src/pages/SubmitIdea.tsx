@@ -252,8 +252,10 @@ export function SubmitIdea() {
         </div>
       </section>
 
-      {/* Section 2: Part code(s) */}
-      <section className="card p-6">
+      {/* Section 2: Part code(s) — raised above later cards so the search
+          results dropdown isn't clipped behind Section 3 (each .card is its
+          own stacking context via backdrop-blur). */}
+      <section className="card relative z-30 p-6">
         <h2 className="text-base font-semibold text-slate-900">2 · Part code(s)</h2>
         <p className="mt-0.5 text-sm text-slate-500">Search the ERP part master and link one or more part codes.</p>
         <div className="relative mt-4">
@@ -270,7 +272,7 @@ export function SubmitIdea() {
             onBlur={() => setTimeout(() => setDropdownOpen(false), 150)}
           />
           {dropdownOpen && matches.length > 0 && (
-            <div className="absolute z-10 mt-1 max-h-72 w-full overflow-y-auto rounded-lg border border-slate-200 bg-surface shadow-lifted">
+            <div className="absolute z-20 mt-1 max-h-72 w-full overflow-y-auto rounded-lg border border-slate-200 bg-surface shadow-lifted">
               {matches.map((p) => (
                 <button
                   key={p.code}
