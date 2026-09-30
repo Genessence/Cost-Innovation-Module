@@ -1,8 +1,10 @@
 import type {
+  Commodity,
   CostInnovationType,
   Department,
   ExpectedImpact,
   Idea,
+  PartCategory,
   TaskPriority,
   TimelineEvent,
 } from '../types';
@@ -21,6 +23,26 @@ const VALIDATOR_BY_DEPT: Record<Department, string> = {
 
 export function validatorForDepartment(dept: Department): string {
   return VALIDATOR_BY_DEPT[dept];
+}
+
+/** Maps a part's category to its dominant raw-material/commodity bucket. */
+const COMMODITY_BY_CATEGORY: Record<PartCategory, Commodity> = {
+  Compressor: 'Others',
+  'Sheet Metal': 'Steel (CRCA / GI)',
+  'Copper Tubing': 'Copper',
+  PCB: 'PCB / Electronics',
+  Motor: 'Others',
+  Fasteners: 'Fasteners',
+  Insulation: 'EPS / PE Foam',
+  'Wiring Harness': 'Wiring & Harness',
+  Plastics: 'ABS Plastic',
+  'Heat Exchanger': 'Aluminium',
+};
+
+/** Derives a seed idea's commodity from its first linked part's category. */
+function commodityForParts(partCodes: string[]): Commodity {
+  const first = getPartCode(partCodes[0]);
+  return first ? COMMODITY_BY_CATEGORY[first.category] : 'Others';
 }
 
 /**
@@ -80,6 +102,7 @@ function pendingIdea(s: SeedBase): Idea {
     description: s.description,
     photo: s.photo,
     costInnovationType: s.type,
+    commodity: commodityForParts(s.partCodes),
     expectedImpact: buildImpact(s.partCodes, s.expectedCost),
     status: 'Pending Validation',
     createdAt: s.createdAt,
@@ -194,10 +217,10 @@ export const SEED_IDEAS: Idea[] = [
       partCodes: ['AMB-SHM-01102'],
       description:
         'Structural simulation shows the outdoor cabinet panel retains required rigidity at 0.55 mm CRCA with an added stiffening rib. Reduces steel consumption per unit without affecting powder-coat finish.',
-      type: 'Design Optimization',
+      type: 'Value Engineering',
       expectedCost: 455,
       createdAt: '2025-09-08T10:20:00',
-      photo: photo('ODU Cabinet Panel', 'CRCA gauge reduction trial', '#0F766E'),
+      photo: photo('ODU Cabinet Panel', 'CRCA gauge reduction trial', '#A85A38'),
     },
     '2025-09-15T15:40:00',
     'Simulation report reviewed. Proceed with pilot batch and drop test.',
@@ -221,7 +244,7 @@ export const SEED_IDEAS: Idea[] = [
       partCodes: ['AMB-PCB-03315'],
       description:
         'Second-source vendor quoted lower on the display PCB at same spec with better MOQ flexibility. Samples cleared functional and burn-in tests.',
-      type: 'Supplier/Sourcing Change',
+      type: 'Alternate Supplier',
       expectedCost: 385,
       createdAt: '2025-10-05T09:10:00',
     },
@@ -247,10 +270,10 @@ export const SEED_IDEAS: Idea[] = [
       partCodes: ['AMB-CTB-02201'],
       description:
         'Buying 9.52 mm grooved copper coil directly from the mill instead of through a converter removes one margin layer. Annual volume qualifies us for mill-direct pricing.',
-      type: 'Supplier/Sourcing Change',
+      type: 'Alternate Supplier',
       expectedCost: 1165,
       createdAt: '2025-11-02T11:45:00',
-      photo: photo('Copper Coil 9.52mm', 'Mill-direct procurement', '#B45309'),
+      photo: photo('Copper Coil 9.52mm', 'Mill-direct procurement', '#8C5E1E'),
     },
     '2025-11-10T16:20:00',
     'Commercially sound. Confirm mill lead times cover our safety stock policy.',
@@ -274,7 +297,7 @@ export const SEED_IDEAS: Idea[] = [
       partCodes: ['AMB-INS-06612'],
       description:
         'Transit trials show 18-density EPS with revised rib profile passes ISTA drop testing for the indoor unit, replacing the current 20-density moulding.',
-      type: 'Packaging & Logistics',
+      type: 'Packing Standard Implementation',
       expectedCost: 104,
       createdAt: '2025-11-20T13:30:00',
     },
@@ -300,10 +323,10 @@ export const SEED_IDEAS: Idea[] = [
       partCodes: ['AMB-SHM-01118'],
       description:
         'Curing oven zone rebalancing plus low-bake powder chemistry cuts gas consumption per chassis base plate by roughly 20% and reduces conversion cost.',
-      type: 'Power/Energy Optimization',
+      type: 'Process Optimization',
       expectedCost: 300,
       createdAt: '2026-01-06T10:00:00',
-      photo: photo('Chassis Base Plate', 'Low-bake powder trial', '#475569'),
+      photo: photo('Chassis Base Plate', 'Low-bake powder trial', '#524738'),
     },
     '2026-01-13T15:30:00',
     'Energy audit numbers verified with utilities team. Go ahead.',
@@ -327,7 +350,7 @@ export const SEED_IDEAS: Idea[] = [
       partCodes: ['AMB-FST-05501'],
       description:
         'Nine screw variants across indoor unit models can collapse into the single M4x12 pan-head variant, unlocking a volume-slab price and simplifying line-side kitting.',
-      type: 'Design Optimization',
+      type: 'Value Engineering',
       expectedCost: 0.78,
       createdAt: '2026-01-15T09:40:00',
     },
@@ -353,10 +376,10 @@ export const SEED_IDEAS: Idea[] = [
       partCodes: ['AMB-PLS-08812'],
       description:
         'Moulding partner can run the air deflector louvre set on a 30% certified regrind ABS blend with no visible finish change, reducing resin cost per set.',
-      type: 'Scrap/Wastage Reduction',
+      type: 'Scrap Management',
       expectedCost: 80,
       createdAt: '2026-02-02T11:20:00',
-      photo: photo('Louvre Set', '30% regrind ABS blend', '#7C3AED'),
+      photo: photo('Louvre Set', '30% regrind ABS blend', '#5A4A60'),
     },
     '2026-02-09T16:00:00',
     'Colour-fastness and impact results acceptable. Limit regrind to certified in-house scrap only.',
@@ -382,7 +405,7 @@ export const SEED_IDEAS: Idea[] = [
       partCodes: ['AMB-WRH-07722'],
       description:
         'Coil and ambient sensor harnesses can share one 2-pin JST housing type instead of two variants, cutting connector spend and assembly errors.',
-      type: 'Design Optimization',
+      type: 'Value Engineering',
       expectedCost: 52,
       createdAt: '2026-02-20T10:30:00',
     },
@@ -407,10 +430,10 @@ export const SEED_IDEAS: Idea[] = [
       partCodes: ['AMB-HEX-09901'],
       description:
         'Re-nesting the fin die on 62 mm stock instead of 65 mm removes edge trim scrap on the 2-row condenser coil with identical heat-transfer area.',
-      type: 'Raw Material Change',
+      type: 'Alternate Material / Suppliers',
       expectedCost: 2255,
       createdAt: '2026-03-04T09:50:00',
-      photo: photo('Condenser Coil', 'Fin stock re-nesting', '#0369A1'),
+      photo: photo('Condenser Coil', 'Fin stock re-nesting', '#4A5C78'),
     },
     '2026-03-11T14:30:00',
     'Performance-neutral per lab report. Approved.',
@@ -433,7 +456,7 @@ export const SEED_IDEAS: Idea[] = [
       partCodes: ['AMB-SHM-01118'],
       description:
         'Common-line nesting of chassis blanks on the fiber laser improves GI sheet utilization from 78% to 86%, reducing per-part material cost.',
-      type: 'Process Improvement',
+      type: 'Process Optimization',
       expectedCost: 298,
       createdAt: '2026-03-10T10:15:00',
     },
@@ -458,7 +481,7 @@ export const SEED_IDEAS: Idea[] = [
       partCodes: ['AMB-CTB-02230'],
       description:
         'Qualifying a second brazing vendor for the suction line assembly creates negotiation leverage and de-risks single-source supply.',
-      type: 'Supplier/Sourcing Change',
+      type: 'Alternate Supplier',
       expectedCost: 612,
       createdAt: '2026-03-18T11:40:00',
     },
@@ -485,10 +508,10 @@ export const SEED_IDEAS: Idea[] = [
       partCodes: ['AMB-MTR-04401'],
       description:
         'Switching from N42 to N38 NdFeB magnets with a revised stator stack keeps efficiency within spec at lower magnet cost.',
-      type: 'Design Optimization',
+      type: 'Value Engineering',
       expectedCost: 1090,
       createdAt: '2026-04-02T10:10:00',
-      photo: photo('BLDC Fan Motor', 'Magnet grade N42 → N38', '#0F766E'),
+      photo: photo('BLDC Fan Motor', 'Magnet grade N42 → N38', '#A85A38'),
     },
     '2026-04-09T14:50:00',
     'Efficiency margin adequate. Validate noise levels during pilot.',
@@ -509,7 +532,7 @@ export const SEED_IDEAS: Idea[] = [
       partCodes: ['AMB-PCB-03301'],
       description:
         'Full-board conformal coating can move to selective robotic coating of high-risk zones only, cutting coating material and cycle time without field-failure exposure.',
-      type: 'Process Improvement',
+      type: 'Process Optimization',
       expectedCost: 2795,
       createdAt: '2026-04-10T09:30:00',
     },
@@ -533,7 +556,7 @@ export const SEED_IDEAS: Idea[] = [
       partCodes: ['AMB-MTR-04412'],
       description:
         'Replacing single-use corrugated boxes with returnable plastic totes for the local motor vendor cuts packaging cost per motor across the loop.',
-      type: 'Packaging & Logistics',
+      type: 'Packing Standard Implementation',
       expectedCost: 958,
       createdAt: '2026-04-20T11:00:00',
     },
@@ -556,7 +579,7 @@ export const SEED_IDEAS: Idea[] = [
       partCodes: ['AMB-INS-06620'],
       description:
         'Rotating the die-cut layout of the PE foam drain pan insulation increases sheet yield from 11 to 13 pieces per sheet.',
-      type: 'Scrap/Wastage Reduction',
+      type: 'Scrap Management',
       expectedCost: 38,
       createdAt: '2026-05-02T10:20:00',
     },
@@ -580,7 +603,7 @@ export const SEED_IDEAS: Idea[] = [
       partCodes: ['AMB-CTB-02214'],
       description:
         'Moving the 6.35 mm plain tube to 25 m coils reduces per-metre conversion charges and brazed joints per unit on the tubing line.',
-      type: 'Process Improvement',
+      type: 'Process Optimization',
       expectedCost: 868,
       createdAt: '2026-05-16T09:45:00',
     },
@@ -605,10 +628,10 @@ export const SEED_IDEAS: Idea[] = [
       partCodes: ['AMB-WRH-07701'],
       description:
         'The 4-core interconnect cable can move to aluminium conductor with upsized cross-section, meeting IS 694 while cutting copper exposure on 5 m of cable per unit.',
-      type: 'Raw Material Change',
+      type: 'Alternate Material / Suppliers',
       expectedCost: 352,
       createdAt: '2026-05-10T10:40:00',
-      photo: photo('Interconnect Harness', 'Al conductor evaluation', '#B45309'),
+      photo: photo('Interconnect Harness', 'Al conductor evaluation', '#8C5E1E'),
     },
     '2026-05-18T15:30:00',
     'Termination reliability plan is solid; crimp validation mandatory during execution.'
@@ -622,7 +645,7 @@ export const SEED_IDEAS: Idea[] = [
       partCodes: ['AMB-FST-05515'],
       description:
         'Consolidating three coating vendors into one zinc-flake applicator with committed volumes yields a lower applied cost per bolt.',
-      type: 'Supplier/Sourcing Change',
+      type: 'Alternate Supplier',
       expectedCost: 2.2,
       createdAt: '2026-05-22T11:15:00',
     },
@@ -638,7 +661,7 @@ export const SEED_IDEAS: Idea[] = [
       partCodes: ['AMB-PLS-08820'],
       description:
         'Reducing carbon-black masterbatch loading from 4% to 2.5% with a UV stabilizer package keeps weathering performance while lowering compound cost.',
-      type: 'Raw Material Change',
+      type: 'Alternate Material / Suppliers',
       expectedCost: 69,
       createdAt: '2026-06-04T10:00:00',
     },
@@ -654,7 +677,7 @@ export const SEED_IDEAS: Idea[] = [
       partCodes: ['AMB-FST-05528'],
       description:
         'Moving grommets from 60A to 55A shore EPDM improves vibration isolation and allows a simpler mould, reducing kit cost.',
-      type: 'Design Optimization',
+      type: 'Value Engineering',
       expectedCost: 25.5,
       createdAt: '2026-06-15T09:30:00',
     },
@@ -672,7 +695,7 @@ export const SEED_IDEAS: Idea[] = [
       partCodes: ['AMB-CTB-02230'],
       description:
         'Aluminium suction line assemblies quoted 40% cheaper than copper. Proposal to switch with transition joints at compressor end.',
-      type: 'Raw Material Change',
+      type: 'Alternate Material / Suppliers',
       expectedCost: 390,
       createdAt: '2025-10-20T10:30:00',
     },
@@ -688,7 +711,7 @@ export const SEED_IDEAS: Idea[] = [
       partCodes: ['AMB-HEX-09901'],
       description:
         'A single-row condenser with higher fin density could replace the 2-row coil on the 1.0T fixed-speed platform.',
-      type: 'Design Optimization',
+      type: 'Value Engineering',
       expectedCost: 1950,
       createdAt: '2026-02-10T11:00:00',
     },
@@ -704,7 +727,7 @@ export const SEED_IDEAS: Idea[] = [
       partCodes: ['AMB-PLS-08801'],
       description:
         'Reducing front panel nominal wall to 2.0 mm cuts ABS consumption ~15% and shortens moulding cycle time.',
-      type: 'Design Optimization',
+      type: 'Value Engineering',
       expectedCost: 295,
       createdAt: '2026-04-12T10:45:00',
     },
@@ -720,7 +743,7 @@ export const SEED_IDEAS: Idea[] = [
       partCodes: ['AMB-PCB-03301'],
       description:
         'A domestic IPM module is quoted 22% below the incumbent branded module for the inverter control board.',
-      type: 'Supplier/Sourcing Change',
+      type: 'Alternate Supplier',
       expectedCost: 2620,
       createdAt: '2026-05-15T09:50:00',
     },
@@ -737,10 +760,10 @@ export const SEED_IDEAS: Idea[] = [
     partCodes: ['AMB-HEX-09912'],
     description:
       'Installing an in-line hydrophilic coating station lets us buy uncoated fin stock and coat in-house, cutting the coating premium currently paid to the fin supplier.',
-    type: 'Process Improvement',
+    type: 'Process Optimization',
     expectedCost: 1820,
     createdAt: '2026-06-28T10:30:00',
-    photo: photo('Evaporator Coil', 'In-house fin coating', '#0369A1'),
+    photo: photo('Evaporator Coil', 'In-house fin coating', '#4A5C78'),
   }),
   pendingIdea({
     id: 'CI-2026-0041',
@@ -750,7 +773,7 @@ export const SEED_IDEAS: Idea[] = [
     partCodes: ['AMB-MTR-04420'],
     description:
       'Louvre stepper gearbox gears in glass-filled PBT match POM wear life at our torque levels per vendor DOE, at lower resin cost.',
-    type: 'Raw Material Change',
+    type: 'Alternate Material / Suppliers',
     expectedCost: 137,
     createdAt: '2026-07-02T09:20:00',
   }),
@@ -762,7 +785,7 @@ export const SEED_IDEAS: Idea[] = [
     partCodes: ['AMB-WRH-07715'],
     description:
       'The imported silicone sleeve on the compressor terminal harness has two qualified domestic equivalents; localization removes import duty and freight.',
-    type: 'Supplier/Sourcing Change',
+    type: 'Alternate Supplier',
     expectedCost: 84,
     createdAt: '2026-07-05T11:10:00',
   }),
@@ -774,7 +797,7 @@ export const SEED_IDEAS: Idea[] = [
     partCodes: ['AMB-PCB-03315', 'AMB-PCB-03322'],
     description:
       'Display and ODU driver PCBs ship from the same EMS cluster; consolidated fortnightly sea shipments replace separate air freight, cutting landed cost on both.',
-    type: 'Packaging & Logistics',
+    type: 'Packing Standard Implementation',
     expectedCost: 1152,
     createdAt: '2026-07-08T10:00:00',
   }),
@@ -786,10 +809,10 @@ export const SEED_IDEAS: Idea[] = [
     partCodes: ['AMB-INS-06601'],
     description:
       'A higher-performance NBR foam grade achieves the same thermal resistance at 11 mm wall versus 13 mm, reducing material per metre.',
-    type: 'Raw Material Change',
+    type: 'Alternate Material / Suppliers',
     expectedCost: 89,
     createdAt: '2026-07-10T09:40:00',
-    photo: photo('NBR Insulation', '11 mm wall trial sample', '#334155'),
+    photo: photo('NBR Insulation', '11 mm wall trial sample', '#3A3128'),
   }),
   pendingIdea({
     id: 'CI-2026-0045',
@@ -799,7 +822,7 @@ export const SEED_IDEAS: Idea[] = [
     partCodes: ['AMB-CMP-00425'],
     description:
       'Moving twin rotary compressor inbound freight from full road to rail-road multimodal cuts logistics cost per unit with one extra day of transit absorbed by safety stock.',
-    type: 'Packaging & Logistics',
+    type: 'Packing Standard Implementation',
     expectedCost: 8825,
     createdAt: '2026-07-12T10:50:00',
   }),

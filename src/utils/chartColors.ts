@@ -1,10 +1,16 @@
 import { COST_INNOVATION_TYPES, DEPARTMENTS, type CostInnovationType, type Department } from '../types';
 
 /**
- * Categorical palette validated for CVD separation and lightness on white cards
- * (teal-led, fixed slot order — never cycled or re-ranked).
+ * Categorical palette — muted, warm-compatible hues tuned to sit on cream/peach
+ * cards without clashing with the theme. Ordered for CVD separation between
+ * adjacent slots (fixed slot order — never cycled or re-ranked).
  */
-export const CATEGORICAL = ['#0d9488', '#eda100', '#4a3aa7', '#e34948', '#2a78d6', '#eb6834', '#e87ba4'];
+export const CATEGORICAL = [
+  '#C6704A', '#B0782B', '#4E7358', '#5A6E8C', '#7A5E70',
+  '#A85A38', '#C9963B', '#6E5C74', '#77997F', '#B24A34',
+  '#4A5C78', '#8C5E1E', '#416049', '#8A7D6D',
+  '#513C49', '#9E5236', '#334C3A', '#6B5D4D',
+];
 
 /** Fixed department → color mapping, consistent across every chart. */
 export const DEPT_COLORS: Record<Department, string> = Object.fromEntries(
@@ -18,10 +24,22 @@ export const TYPE_COLORS: Record<CostInnovationType, string> = Object.fromEntrie
 
 /** Status series for the approval-rate chart (semantic, matches app badges). */
 export const APPROVAL_COLORS = {
-  approved: '#0F766E',
-  rejected: '#DC2626',
-  pending: '#D97706',
+  approved: '#4E7358', // sage
+  rejected: '#B24A34', // terracotta-coral
+  pending: '#B0782B', // bronze
 };
 
-export const CHART_GRID = '#E9E8E2';
-export const CHART_AXIS = '#94A3B8';
+export const CHART_GRID = '#E7DBCB';
+export const CHART_AXIS = '#AE9F8E';
+
+/** Shared Recharts tooltip surface — warm card with soft warm shadow. */
+export const CHART_TOOLTIP = {
+  borderRadius: 12,
+  border: '1px solid #E7DBCB',
+  boxShadow: '0 16px 40px rgba(120,88,56,.16)',
+  fontSize: 12.5,
+  background: '#FFFDFC',
+};
+
+/** Warm hover wash for bar/area cursors. */
+export const CHART_CURSOR = 'rgba(198,112,74,0.07)';

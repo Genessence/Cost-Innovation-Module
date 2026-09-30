@@ -45,7 +45,7 @@ export function IdeaDetail() {
             <h1 className="text-xl font-semibold text-slate-900">{idea.title}</h1>
             <div className="mt-3 flex flex-wrap gap-x-5 gap-y-1.5 text-sm text-slate-500">
               <span className="flex items-center gap-1.5">
-                <UserRound size={15} /> {userName(idea.submittedBy)} · {idea.department}
+                <UserRound size={15} /> {userName(idea.submittedBy)} · {idea.department ?? idea.organization ?? 'External Vendor'}
               </span>
               <span className="flex items-center gap-1.5">
                 <CalendarDays size={15} /> {formatDate(idea.createdAt)}
@@ -53,6 +53,11 @@ export function IdeaDetail() {
               <span className="rounded-full bg-slate-100 px-2.5 py-0.5 text-xs font-medium text-slate-600">
                 {idea.costInnovationType}
               </span>
+              {idea.commodity && (
+                <span className="rounded-full bg-teal-50 px-2.5 py-0.5 text-xs font-medium text-teal-700">
+                  {idea.commodity}
+                </span>
+              )}
             </div>
             <p className="mt-4 whitespace-pre-line text-sm leading-relaxed text-slate-600">{idea.description}</p>
             {idea.photo && (

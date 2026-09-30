@@ -19,7 +19,7 @@ export function PhotoWithLightbox({ src, alt }: { src: string; alt: string }) {
       {open && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/80 p-6" onClick={() => setOpen(false)}>
           <button
-            className="absolute right-4 top-4 rounded-full bg-white/10 p-2 text-white hover:bg-white/20"
+            className="absolute right-4 top-4 rounded-full bg-surface/10 p-2 text-white hover:bg-surface/20"
             onClick={() => setOpen(false)}
             aria-label="Close"
           >

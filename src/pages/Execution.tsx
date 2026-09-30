@@ -1,20 +1,27 @@
 import { useMemo, useState } from 'react';
-import { Link } from 'react-router-dom';
-import { CalendarDays, CheckCircle2, ClipboardList, ListChecks, Play, UserRound, X } from 'lucide-react';
-import { TASK_PRIORITIES, type Idea, type TaskPriority, type TaskStatus } from '../types';
+import { CheckCircle2, ListChecks, Play } from 'lucide-react';
+import { TASK_PRIORITIES, type Idea, type TaskPriority } from '../types';
 import { useAuthStore } from '../store/auth';
 import { useAppStore } from '../store/app';
 import { useToastStore } from '../store/toast';
 import { USERS, userName } from '../data/users';
 import { PriorityBadge } from '../components/StatusBadge';
+import { CenterModal } from '../components/CenterModal';
 import { EmptyState } from '../components/EmptyState';
 import { formatDate, formatINRCompact } from '../utils/format';
 
-const COLUMNS: { status: TaskStatus; title: string; accent: string }[] = [
-  { status: 'Assigned', title: 'Assigned', accent: 'border-t-slate-400' },
-  { status: 'In Progress', title: 'In Progress', accent: 'border-t-blue-500' },
-  { status: 'Completed', title: 'Completed', accent: 'border-t-emerald-500' },
-];
+type Stage = 'feasible' | 'assigned' | 'inprogress' | 'completed';
+
+const STEPS = ['Feasible', 'Assigned', 'In Progress', 'Done'];
+const STAGE_RANK: Record<Stage, number> = { feasible: 0, assigned: 1, inprogress: 2, completed: 3 };
+
+function stageOf(idea: Idea): Stage {
+  const status = idea.executionTask?.status;
+  if (status === 'Completed') return 'completed';
+  if (status === 'In Progress') return 'inprogress';
+  if (status === 'Assigned') return 'assigned';
+  return 'feasible';
+}
 
 export function Execution() {
   const user = useAuthStore((s) => s.currentUser)!;
@@ -30,17 +37,26 @@ export function Execution() {
   const [instructions, setInstructions] = useState('');
   const [errors, setErrors] = useState<Record<string, string>>({});
 
-  const feasible = useMemo(
-    () => ideas.filter((i) => i.status === 'Feasible').sort((a, b) => a.createdAt.localeCompare(b.createdAt)),
-    [ideas]
-  );
-  const withTasks = useMemo(
-    () =>
-      ideas
-        .filter((i) => i.executionTask)
-        .sort((a, b) => (a.executionTask!.targetDate || '').localeCompare(b.executionTask!.targetDate || '')),
-    [ideas]
-  );
+  // Everything in the execution flow: feasible ideas + any idea with a task.
+  const rows = useMemo(() => {
+    const list = ideas.filter((i) => i.status === 'Feasible' || i.executionTask);
+    return [...list].sort((a, b) => {
+      const ra = STAGE_RANK[stageOf(a)];
+      const rb = STAGE_RANK[stageOf(b)];
+      if (ra !== rb) return ra - rb; // active stages first, completed last
+      const ka = a.executionTask?.targetDate || a.createdAt;
+      const kb = b.executionTask?.targetDate || b.createdAt;
+      return ka.localeCompare(kb);
+    });
+  }, [ideas]);
+
+  const counts = useMemo(() => {
+    const c = { feasible: 0, assigned: 0, inprogress: 0, completed: 0 };
+    for (const i of ideas) {
+      if (i.status === 'Feasible' || i.executionTask) c[stageOf(i)] += 1;
+    }
+    return c;
+  }, [ideas]);
 
   function openAssign(idea: Idea) {
     setAssigning(idea);
@@ -67,186 +83,191 @@ export function Execution() {
   function handleAdvance(idea: Idea) {
     const completing = idea.executionTask!.status === 'In Progress';
     advanceTask(idea.id, user.id);
-    toast(
-      completing
-        ? `${idea.id} marked Implemented — ready for MRN verification`
-        : `Execution started on ${idea.id}`
+    toast(completing ? `${idea.id} marked Implemented — ready for MRN verification` : `Execution started on ${idea.id}`);
+  }
+
+  const today = new Date().toISOString().slice(0, 10);
+
+  function renderRow(idea: Idea) {
+    const stage = stageOf(idea);
+    const rank = STAGE_RANK[stage];
+    const task = idea.executionTask;
+    const overdue = !!task && task.status !== 'Completed' && task.targetDate < today;
+
+    // Meta line: current stage · assignee · target date
+    const metaParts: string[] = [STEPS[rank] === 'Done' ? 'Completed' : STEPS[rank]];
+    if (task) metaParts.push(userName(task.assignedTo));
+    if (task && stage !== 'completed') metaParts.push(`target ${formatDate(task.targetDate)}`);
+
+    return (
+      <div key={idea.id} className="card p-4">
+        <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-2">
+          <div className="flex min-w-0 items-center gap-2">
+            <span className="font-mono text-xs text-slate-400">{idea.id}</span>
+            <span className="truncate text-sm font-semibold text-slate-800">{idea.title}</span>
+          </div>
+          {task && (stage === 'assigned' || stage === 'inprogress') && <PriorityBadge priority={task.priority} />}
+        </div>
+
+        {/* Stage tracker */}
+        <div className="mt-3 flex items-start">
+          {STEPS.map((label, idx) => {
+            const reached = idx <= rank;
+            const connectorFilled = idx > 0 && idx <= rank;
+            return (
+              <div key={label} className="relative flex flex-1 flex-col items-center text-center">
+                {idx > 0 && (
+                  <span
+                    className={`absolute right-1/2 top-[7px] h-0.5 w-full ${connectorFilled ? 'bg-primary' : 'bg-slate-200'}`}
+                  />
+                )}
+                <span
+                  className={`relative z-10 h-3.5 w-3.5 rounded-full ${
+                    idx === rank ? 'bg-primary ring-4 ring-primary/15' : reached ? 'bg-primary' : 'bg-slate-200'
+                  }`}
+                />
+                <span className={`mt-1 text-[10px] ${reached ? 'text-slate-500' : 'text-slate-300'}`}>{label}</span>
+              </div>
+            );
+          })}
+        </div>
+
+        {/* Meta + action */}
+        <div className="mt-3 flex flex-wrap items-center justify-between gap-3">
+          <p className={`text-xs ${overdue ? 'font-medium text-red-600' : 'text-slate-500'}`}>
+            {metaParts.join(' · ')}
+            {overdue && ' · overdue'}
+          </p>
+
+          {stage === 'feasible' && (
+            <button className="btn-secondary !px-3 !py-1.5 text-xs" onClick={() => openAssign(idea)}>
+              Assign →
+            </button>
+          )}
+          {stage === 'assigned' && (
+            <button className="btn-secondary !px-3 !py-1.5 text-xs" onClick={() => handleAdvance(idea)}>
+              <Play size={13} /> Start →
+            </button>
+          )}
+          {stage === 'inprogress' && (
+            <button className="btn-primary !px-3 !py-1.5 text-xs" onClick={() => handleAdvance(idea)}>
+              <CheckCircle2 size={13} /> Complete ✓
+            </button>
+          )}
+          {stage === 'completed' && task?.completedAt && (
+            <span className="rounded-md bg-emerald-50 px-2.5 py-1 text-xs font-medium text-emerald-700">
+              Implemented {formatDate(task.completedAt)}
+            </span>
+          )}
+        </div>
+      </div>
     );
   }
 
   return (
-    <div className="space-y-8">
-      {/* Feasible ideas awaiting task assignment */}
-      <section>
-        <h2 className="text-sm font-semibold uppercase tracking-wider text-slate-400">
-          Awaiting task assignment ({feasible.length})
-        </h2>
-        {feasible.length === 0 ? (
-          <p className="mt-3 rounded-xl border border-dashed border-slate-300 px-4 py-6 text-center text-sm text-slate-400">
-            No feasible ideas waiting. Validate ideas in the queue to bring them here.
-          </p>
-        ) : (
-          <div className="mt-3 grid gap-4 md:grid-cols-2 xl:grid-cols-3">
-            {feasible.map((idea) => (
-              <div key={idea.id} className="card flex flex-col p-5">
-                <div className="flex items-center justify-between">
-                  <Link to={`/ideas/${idea.id}`} className="font-mono text-xs font-semibold text-slate-400 hover:text-primary">
-                    {idea.id}
-                  </Link>
-                  <span className="text-xs text-slate-400">{idea.department}</span>
-                </div>
-                <h3 className="mt-1.5 line-clamp-2 text-sm font-semibold text-slate-800">{idea.title}</h3>
-                <p className="mt-1 text-xs text-slate-500">
-                  {formatINRCompact(idea.expectedImpact.expectedAnnualSaving)} expected annual saving
-                </p>
-                <button className="btn-primary mt-4" onClick={() => openAssign(idea)}>
-                  <ClipboardList size={15} /> Assign execution task
-                </button>
-              </div>
-            ))}
-          </div>
-        )}
-      </section>
+    <div className="space-y-4">
+      {/* Summary strip */}
+      <p className="text-xs text-slate-500">
+        {counts.feasible} ready · {counts.assigned} assigned · {counts.inprogress} in progress · {counts.completed} completed
+      </p>
 
-      {/* Kanban */}
-      <section>
-        <h2 className="text-sm font-semibold uppercase tracking-wider text-slate-400">Execution board</h2>
-        {withTasks.length === 0 ? (
-          <div className="mt-3">
-            <EmptyState
-              icon={ListChecks}
-              title="No execution tasks yet"
-              message="Assign a task on a feasible idea to start tracking execution here."
-            />
-          </div>
-        ) : (
-          <div className="mt-3 grid gap-4 lg:grid-cols-3">
-            {COLUMNS.map(({ status, title, accent }) => {
-              const cards = withTasks.filter((i) => i.executionTask!.status === status);
-              return (
-                <div key={status} className={`rounded-xl border border-slate-200 border-t-4 bg-slate-50/60 p-3 ${accent}`}>
-                  <p className="px-1 text-sm font-semibold text-slate-700">
-                    {title} <span className="ml-1 text-xs font-normal text-slate-400">{cards.length}</span>
-                  </p>
-                  <div className="mt-3 space-y-3">
-                    {cards.length === 0 && (
-                      <p className="rounded-lg border border-dashed border-slate-300 px-3 py-6 text-center text-xs text-slate-400">
-                        Nothing here
-                      </p>
-                    )}
-                    {cards.map((idea) => {
-                      const task = idea.executionTask!;
-                      const overdue = task.status !== 'Completed' && task.targetDate < new Date().toISOString().slice(0, 10);
-                      return (
-                        <div key={idea.id} className="card p-4">
-                          <div className="flex items-center justify-between gap-2">
-                            <Link to={`/ideas/${idea.id}`} className="font-mono text-xs font-semibold text-slate-400 hover:text-primary">
-                              {idea.id}
-                            </Link>
-                            <PriorityBadge priority={task.priority} />
-                          </div>
-                          <p className="mt-1.5 line-clamp-2 text-sm font-medium text-slate-800">{idea.title}</p>
-                          <div className="mt-2.5 space-y-1 text-xs text-slate-500">
-                            <p className="flex items-center gap-1.5">
-                              <UserRound size={13} /> {userName(task.assignedTo)}
-                            </p>
-                            <p className={`flex items-center gap-1.5 ${overdue ? 'font-medium text-red-600' : ''}`}>
-                              <CalendarDays size={13} /> Target {formatDate(task.targetDate)}
-                              {overdue && ' · overdue'}
-                            </p>
-                          </div>
-                          {task.status === 'Assigned' && (
-                            <button className="btn-secondary mt-3 w-full !py-1.5 text-xs" onClick={() => handleAdvance(idea)}>
-                              <Play size={13} /> Start execution
-                            </button>
-                          )}
-                          {task.status === 'In Progress' && (
-                            <button className="btn-primary mt-3 w-full !py-1.5 text-xs" onClick={() => handleAdvance(idea)}>
-                              <CheckCircle2 size={13} /> Mark complete
-                            </button>
-                          )}
-                          {task.status === 'Completed' && task.completedAt && (
-                            <p className="mt-3 rounded-md bg-emerald-50 px-2 py-1.5 text-center text-xs text-emerald-700">
-                              Implemented {formatDate(task.completedAt)}
-                            </p>
-                          )}
-                        </div>
-                      );
-                    })}
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-        )}
-      </section>
+      {/* Progress rows */}
+      {rows.length === 0 ? (
+        <EmptyState
+          icon={ListChecks}
+          title="No ideas in execution"
+          message="Validate ideas as feasible to bring them here for task assignment and tracking."
+        />
+      ) : (
+        <div className="space-y-3">{rows.map(renderRow)}</div>
+      )}
 
       {/* Assignment modal */}
-      {assigning && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-          <div className="absolute inset-0 bg-slate-900/40" onClick={() => setAssigning(null)} />
-          <div className="relative w-full max-w-md rounded-xl bg-white p-6 shadow-lifted">
-            <div className="flex items-start justify-between">
-              <div>
-                <h3 className="text-base font-semibold text-slate-900">Assign execution task</h3>
-                <p className="mt-0.5 text-sm text-slate-500">
-                  <span className="font-mono">{assigning.id}</span> · {assigning.title}
-                </p>
-              </div>
-              <button className="rounded p-1 text-slate-400 hover:bg-slate-100" onClick={() => setAssigning(null)}>
-                <X size={16} />
+      <CenterModal
+        open={!!assigning}
+        onClose={() => setAssigning(null)}
+        title={
+          assigning && (
+            <div className="min-w-0">
+              <p className="font-mono text-xs text-slate-400">{assigning.id}</p>
+              <h3 className="truncate text-base font-semibold text-slate-900">{assigning.title}</h3>
+            </div>
+          )
+        }
+        footer={
+          assigning && (
+            <div className="flex items-center gap-3">
+              <button className="btn-primary flex-1" onClick={handleAssign}>
+                Assign Task
               </button>
-            </div>
-            <div className="mt-5 space-y-4">
-              <div>
-                <label className="label">Assignee *</label>
-                <select className="input" value={assignee} onChange={(e) => setAssignee(e.target.value)}>
-                  <option value="">Select assignee…</option>
-                  {USERS.filter((u) => u.role === 'submitter').map((u) => (
-                    <option key={u.id} value={u.id}>
-                      {u.name} — {u.department}
-                    </option>
-                  ))}
-                </select>
-                {errors.assignee && <p className="mt-1.5 text-sm text-red-600">{errors.assignee}</p>}
-              </div>
-              <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <label className="label">Target date *</label>
-                  <input type="date" className="input" value={targetDate} onChange={(e) => setTargetDate(e.target.value)} />
-                  {errors.targetDate && <p className="mt-1.5 text-sm text-red-600">{errors.targetDate}</p>}
-                </div>
-                <div>
-                  <label className="label">Priority</label>
-                  <select className="input" value={priority} onChange={(e) => setPriority(e.target.value as TaskPriority)}>
-                    {TASK_PRIORITIES.map((p) => (
-                      <option key={p}>{p}</option>
-                    ))}
-                  </select>
-                </div>
-              </div>
-              <div>
-                <label className="label">Instructions *</label>
-                <textarea
-                  className="input min-h-[90px] resize-y"
-                  placeholder="What must be executed, validated, and documented?"
-                  value={instructions}
-                  onChange={(e) => setInstructions(e.target.value)}
-                />
-                {errors.instructions && <p className="mt-1.5 text-sm text-red-600">{errors.instructions}</p>}
-              </div>
-            </div>
-            <div className="mt-6 flex justify-end gap-2.5">
-              <button className="btn-secondary" onClick={() => setAssigning(null)}>
+              <button className="text-sm text-slate-500 hover:text-slate-700" onClick={() => setAssigning(null)}>
                 Cancel
               </button>
-              <button className="btn-primary" onClick={handleAssign}>
-                Assign task
-              </button>
+            </div>
+          )
+        }
+      >
+        {assigning && (
+          <div className="space-y-4">
+            <div className="rounded-lg bg-slate-50 p-4">
+              <p className="text-xs text-slate-500">Expected saving</p>
+              <p className="text-xl font-semibold text-teal-700">
+                {formatINRCompact(assigning.expectedImpact.expectedAnnualSaving)}/yr
+              </p>
+            </div>
+
+            <div>
+              <label className="label">Assignee *</label>
+              <select className="input" value={assignee} onChange={(e) => setAssignee(e.target.value)}>
+                <option value="">Select assignee…</option>
+                {USERS.filter((u) => u.role === 'submitter').map((u) => (
+                  <option key={u.id} value={u.id}>
+                    {u.name} — {u.department ?? u.organization}
+                  </option>
+                ))}
+              </select>
+              {errors.assignee && <p className="mt-1.5 text-sm text-red-600">{errors.assignee}</p>}
+            </div>
+
+            <div>
+              <label className="label">Target date *</label>
+              <input type="date" className="input" value={targetDate} onChange={(e) => setTargetDate(e.target.value)} />
+              {errors.targetDate && <p className="mt-1.5 text-sm text-red-600">{errors.targetDate}</p>}
+            </div>
+
+            <div>
+              <label className="label">Priority</label>
+              <div className="flex gap-2">
+                {TASK_PRIORITIES.map((p) => (
+                  <button
+                    key={p}
+                    type="button"
+                    onClick={() => setPriority(p)}
+                    className={`flex-1 rounded-lg border px-3 py-2 text-sm font-medium transition-colors ${
+                      priority === p
+                        ? 'border-primary bg-primary-light/40 text-primary-dark'
+                        : 'border-slate-200 text-slate-600 hover:bg-slate-50'
+                    }`}
+                  >
+                    {p}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            <div>
+              <label className="label">Instructions *</label>
+              <textarea
+                className="input min-h-[80px] resize-y"
+                placeholder="What must be executed, validated, and documented?"
+                value={instructions}
+                onChange={(e) => setInstructions(e.target.value)}
+              />
+              {errors.instructions && <p className="mt-1.5 text-sm text-red-600">{errors.instructions}</p>}
             </div>
           </div>
-        </div>
-      )}
+        )}
+      </CenterModal>
     </div>
   );
 }

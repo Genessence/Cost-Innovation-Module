@@ -1,23 +1,13 @@
 import { useMemo, useRef, useState, type DragEvent } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { CheckCircle2, ImagePlus, Search, Trash2, X } from 'lucide-react';
-import { COST_INNOVATION_TYPES, type CostInnovationType } from '../types';
+import { COMMODITIES, COST_INNOVATION_TYPES, type Commodity, type CostInnovationType } from '../types';
 import { PART_CODES, getPartCode } from '../data/partCodes';
 import { useAuthStore } from '../store/auth';
 import { useAppStore } from '../store/app';
 import { useToastStore } from '../store/toast';
 import { PartCodeCard } from '../components/PartCodeCard';
 import { formatINR, formatINRCompact, formatPercent } from '../utils/format';
-
-const TYPE_HINTS: Record<CostInnovationType, string> = {
-  'Raw Material Change': 'Alternate material or grade at lower cost',
-  'Power/Energy Optimization': 'Cut energy consumed per unit produced',
-  'Process Improvement': 'Better yield, cycle time, or routing',
-  'Supplier/Sourcing Change': 'New vendor, negotiation, or localization',
-  'Design Optimization': 'Part redesign, standardization, or delayering',
-  'Packaging & Logistics': 'Cheaper packaging or freight per unit',
-  'Scrap/Wastage Reduction': 'Recover or reduce material waste',
-};
 
 export function SubmitIdea() {
   const user = useAuthStore((s) => s.currentUser)!;
@@ -32,6 +22,7 @@ export function SubmitIdea() {
   const [description, setDescription] = useState('');
   const [photo, setPhoto] = useState<string | undefined>();
   const [type, setType] = useState<CostInnovationType | ''>('');
+  const [commodity, setCommodity] = useState<Commodity | ''>('');
   const [expectedCostInput, setExpectedCostInput] = useState('');
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [submittedId, setSubmittedId] = useState<string | null>(null);
@@ -89,6 +80,7 @@ export function SubmitIdea() {
     if (!title.trim()) errs.title = 'Title is required.';
     if (description.trim().length < 20) errs.description = 'Describe the idea in at least 20 characters.';
     if (!type) errs.type = 'Choose the type of cost innovation.';
+    if (!commodity) errs.commodity = 'Choose the commodity.';
     if (!hasValidCost) errs.expectedCost = 'Enter the expected new cost per unit.';
     else if (expectedCost >= currentCost) errs.expectedCost = 'Expected cost must be lower than the current cost.';
     setErrors(errs);
@@ -98,10 +90,12 @@ export function SubmitIdea() {
       title: title.trim(),
       submittedBy: user.id,
       department: user.department,
+      organization: user.organization,
       partCodes: selectedCodes,
       description: description.trim(),
       photo,
       costInnovationType: type as CostInnovationType,
+      commodity: commodity as Commodity,
       expectedCost,
     });
     setSubmittedId(id);
@@ -118,7 +112,7 @@ export function SubmitIdea() {
           <h2 className="mt-5 text-xl font-semibold text-slate-900">Idea submitted!</h2>
           <p className="mt-2 text-sm text-slate-500">
             <span className="font-mono font-semibold text-slate-700">{submittedId}</span> is now pending validation with
-            the {user.department} validator. You can track its status from My Ideas.
+            the {user.submitterType === 'vendor' ? 'assigned' : user.department} validator. You can track its status from My Ideas.
           </p>
           <div className="mt-7 flex gap-3">
             <button className="btn-primary" onClick={() => navigate(`/ideas/${submittedId}`)}>
@@ -133,6 +127,7 @@ export function SubmitIdea() {
                 setDescription('');
                 setPhoto(undefined);
                 setType('');
+                setCommodity('');
                 setExpectedCostInput('');
               }}
             >
@@ -146,9 +141,120 @@ export function SubmitIdea() {
 
   return (
     <div className="mx-auto max-w-3xl space-y-6">
-      {/* Section 1: Part codes */}
+      {/* Section 1: Idea details */}
       <section className="card p-6">
-        <h2 className="text-base font-semibold text-slate-900">1 · Part code(s)</h2>
+        <h2 className="text-base font-semibold text-slate-900">1 · Idea details</h2>
+        <div className="mt-4 space-y-4">
+          <div>
+            <label className="label">Cost innovation type *</label>
+            <select
+              className="input"
+              value={type}
+              onChange={(e) => {
+                setType(e.target.value as CostInnovationType | '');
+                setErrors((er) => ({ ...er, type: '' }));
+              }}
+            >
+              <option value="" disabled>
+                Select the type of cost innovation…
+              </option>
+              {COST_INNOVATION_TYPES.map((t) => (
+                <option key={t} value={t}>
+                  {t}
+                </option>
+              ))}
+            </select>
+            {errors.type && <p className="mt-1.5 text-sm text-red-600">{errors.type}</p>}
+          </div>
+          <div>
+            <label className="label">Commodity *</label>
+            <select
+              className="input"
+              value={commodity}
+              onChange={(e) => {
+                setCommodity(e.target.value as Commodity | '');
+                setErrors((er) => ({ ...er, commodity: '' }));
+              }}
+            >
+              <option value="" disabled>
+                Select the commodity…
+              </option>
+              {COMMODITIES.map((c) => (
+                <option key={c} value={c}>
+                  {c}
+                </option>
+              ))}
+            </select>
+            {errors.commodity && <p className="mt-1.5 text-sm text-red-600">{errors.commodity}</p>}
+          </div>
+          <div>
+            <label className="label">Title *</label>
+            <input
+              className="input"
+              placeholder="e.g. Alternate vendor for indoor display PCB"
+              value={title}
+              onChange={(e) => setTitle(e.target.value)}
+            />
+            {errors.title && <p className="mt-1.5 text-sm text-red-600">{errors.title}</p>}
+          </div>
+          <div>
+            <label className="label">Description *</label>
+            <textarea
+              className="input min-h-[120px] resize-y"
+              placeholder="What is the idea, why will it save cost, and what evidence do you have (trials, quotes, benchmarks)?"
+              value={description}
+              onChange={(e) => setDescription(e.target.value)}
+            />
+            {errors.description && <p className="mt-1.5 text-sm text-red-600">{errors.description}</p>}
+          </div>
+          <div>
+            <label className="label">Photo (optional)</label>
+            {photo ? (
+              <div className="relative inline-block">
+                <img src={photo} alt="Idea attachment" className="h-40 rounded-lg border border-slate-200 object-cover" />
+                <button
+                  className="absolute -right-2 -top-2 rounded-full bg-surface p-1.5 text-slate-500 shadow-card ring-1 ring-slate-200 hover:text-red-600"
+                  onClick={() => setPhoto(undefined)}
+                  aria-label="Remove photo"
+                >
+                  <Trash2 size={14} />
+                </button>
+              </div>
+            ) : (
+              <div
+                onDragOver={(e) => {
+                  e.preventDefault();
+                  setDragging(true);
+                }}
+                onDragLeave={() => setDragging(false)}
+                onDrop={onDrop}
+                onClick={() => fileInputRef.current?.click()}
+                className={`flex cursor-pointer flex-col items-center justify-center rounded-lg border-2 border-dashed px-6 py-8 text-center transition-colors ${
+                  dragging ? 'border-primary bg-teal-50/60' : 'border-slate-300 hover:border-primary/60 hover:bg-slate-50'
+                }`}
+              >
+                <ImagePlus size={24} className="text-slate-400" />
+                <p className="mt-2 text-sm text-slate-600">Drag & drop an image here, or click to browse</p>
+                <p className="text-xs text-slate-400">Sample photo, trial part, quote snapshot…</p>
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  accept="image/*"
+                  className="hidden"
+                  onChange={(e) => {
+                    const f = e.target.files?.[0];
+                    if (f) readFile(f);
+                  }}
+                />
+              </div>
+            )}
+          </div>
+        </div>
+      </section>
+
+      {/* Section 2: Part code(s) */}
+      <section className="card p-6">
+        <h2 className="text-base font-semibold text-slate-900">2 · Part code(s)</h2>
         <p className="mt-0.5 text-sm text-slate-500">Search the ERP part master and link one or more part codes.</p>
         <div className="relative mt-4">
           <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
@@ -164,7 +270,7 @@ export function SubmitIdea() {
             onBlur={() => setTimeout(() => setDropdownOpen(false), 150)}
           />
           {dropdownOpen && matches.length > 0 && (
-            <div className="absolute z-10 mt-1 max-h-72 w-full overflow-y-auto rounded-lg border border-slate-200 bg-white shadow-lifted">
+            <div className="absolute z-10 mt-1 max-h-72 w-full overflow-y-auto rounded-lg border border-slate-200 bg-surface shadow-lifted">
               {matches.map((p) => (
                 <button
                   key={p.code}
@@ -205,102 +311,9 @@ export function SubmitIdea() {
         )}
       </section>
 
-      {/* Section 2: Idea details */}
+      {/* Section 3: Expected impact */}
       <section className="card p-6">
-        <h2 className="text-base font-semibold text-slate-900">2 · Idea details</h2>
-        <div className="mt-4 space-y-4">
-          <div>
-            <label className="label">Title *</label>
-            <input
-              className="input"
-              placeholder="e.g. Alternate vendor for indoor display PCB"
-              value={title}
-              onChange={(e) => setTitle(e.target.value)}
-            />
-            {errors.title && <p className="mt-1.5 text-sm text-red-600">{errors.title}</p>}
-          </div>
-          <div>
-            <label className="label">Description *</label>
-            <textarea
-              className="input min-h-[120px] resize-y"
-              placeholder="What is the idea, why will it save cost, and what evidence do you have (trials, quotes, benchmarks)?"
-              value={description}
-              onChange={(e) => setDescription(e.target.value)}
-            />
-            {errors.description && <p className="mt-1.5 text-sm text-red-600">{errors.description}</p>}
-          </div>
-          <div>
-            <label className="label">Photo (optional)</label>
-            {photo ? (
-              <div className="relative inline-block">
-                <img src={photo} alt="Idea attachment" className="h-40 rounded-lg border border-slate-200 object-cover" />
-                <button
-                  className="absolute -right-2 -top-2 rounded-full bg-white p-1.5 text-slate-500 shadow-card ring-1 ring-slate-200 hover:text-red-600"
-                  onClick={() => setPhoto(undefined)}
-                  aria-label="Remove photo"
-                >
-                  <Trash2 size={14} />
-                </button>
-              </div>
-            ) : (
-              <div
-                onDragOver={(e) => {
-                  e.preventDefault();
-                  setDragging(true);
-                }}
-                onDragLeave={() => setDragging(false)}
-                onDrop={onDrop}
-                onClick={() => fileInputRef.current?.click()}
-                className={`flex cursor-pointer flex-col items-center justify-center rounded-lg border-2 border-dashed px-6 py-8 text-center transition-colors ${
-                  dragging ? 'border-primary bg-teal-50/60' : 'border-slate-300 hover:border-primary/60 hover:bg-slate-50'
-                }`}
-              >
-                <ImagePlus size={24} className="text-slate-400" />
-                <p className="mt-2 text-sm text-slate-600">Drag & drop an image here, or click to browse</p>
-                <p className="text-xs text-slate-400">Sample photo, trial part, quote snapshot…</p>
-                <input
-                  ref={fileInputRef}
-                  type="file"
-                  accept="image/*"
-                  className="hidden"
-                  onChange={(e) => {
-                    const f = e.target.files?.[0];
-                    if (f) readFile(f);
-                  }}
-                />
-              </div>
-            )}
-          </div>
-        </div>
-      </section>
-
-      {/* Section 3: Innovation type */}
-      <section className="card p-6">
-        <h2 className="text-base font-semibold text-slate-900">3 · Type of cost innovation *</h2>
-        <div className="mt-4 grid gap-2.5 sm:grid-cols-2">
-          {COST_INNOVATION_TYPES.map((t) => (
-            <button
-              key={t}
-              type="button"
-              onClick={() => {
-                setType(t);
-                setErrors((e) => ({ ...e, type: '' }));
-              }}
-              className={`rounded-lg border p-3.5 text-left transition-colors ${
-                type === t ? 'border-primary bg-teal-50/70 ring-1 ring-primary' : 'border-slate-200 hover:border-primary/50 hover:bg-slate-50'
-              }`}
-            >
-              <p className="text-sm font-medium text-slate-800">{t}</p>
-              <p className="mt-0.5 text-xs text-slate-500">{TYPE_HINTS[t]}</p>
-            </button>
-          ))}
-        </div>
-        {errors.type && <p className="mt-2 text-sm text-red-600">{errors.type}</p>}
-      </section>
-
-      {/* Section 4: Expected impact */}
-      <section className="card p-6">
-        <h2 className="text-base font-semibold text-slate-900">4 · Expected impact</h2>
+        <h2 className="text-base font-semibold text-slate-900">3 · Expected impact</h2>
         <p className="mt-0.5 text-sm text-slate-500">
           Current cost auto-fills from the selected part code(s). Savings update live as you type.
         </p>

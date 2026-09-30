@@ -15,7 +15,7 @@ export function PartCodeCard({ part, compact }: { part: PartCode; compact?: bool
             <p className="text-sm text-slate-600">{part.description}</p>
           </div>
         </div>
-        <span className="shrink-0 rounded-full bg-white px-2 py-0.5 text-[11px] font-medium text-slate-500 ring-1 ring-inset ring-slate-200">
+        <span className="shrink-0 rounded-full bg-surface px-2 py-0.5 text-[11px] font-medium text-slate-500 ring-1 ring-inset ring-slate-200">
           {part.category}
         </span>
       </div>

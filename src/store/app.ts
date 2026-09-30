@@ -1,6 +1,7 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import type {
+  Commodity,
   CostInnovationType,
   Department,
   Idea,
@@ -15,13 +16,17 @@ import { computeMrnComparison } from '../utils/mrn';
 export interface SubmitIdeaInput {
   title: string;
   submittedBy: string;
-  department: Department;
+  department?: Department; // optional — vendor submitters have no department
+  organization?: string; // present for vendor submitters
   partCodes: string[];
   description: string;
   photo?: string;
   costInnovationType: CostInnovationType;
+  commodity: Commodity;
   expectedCost: number;
 }
+
+const ALL_VALIDATORS = ['v-rnd', 'v-src', 'v-pur', 'v-qua', 'v-pro', 'v-sup'];
 
 export interface AssignTaskInput {
   assignedTo: string;
@@ -82,20 +87,27 @@ export const useAppStore = create<AppState>()(
           title: input.title,
           submittedBy: input.submittedBy,
           department: input.department,
+          organization: input.organization,
+          submitterType: input.department ? 'employee' : 'vendor',
           partCodes: input.partCodes,
           description: input.description,
           photo: input.photo,
           costInnovationType: input.costInnovationType,
+          commodity: input.commodity,
           expectedImpact: buildImpact(input.partCodes, input.expectedCost),
           status: 'Pending Validation',
           createdAt: now,
           timeline: [{ event: 'Idea submitted', actor: userName(input.submittedBy), timestamp: now }],
         };
-        const validator = validatorForDepartment(input.department);
+        // Employee ideas notify their department validator; vendor ideas
+        // (no department) are not department-specific, so notify all validators.
+        const notifTargets = input.department ? [validatorForDepartment(input.department)] : ALL_VALIDATORS;
         set((s) => ({
           ideas: [idea, ...s.ideas],
           notifications: [
-            notif(validator, `New idea ${id} submitted by ${userName(input.submittedBy)} awaits validation`, id),
+            ...notifTargets.map((v) =>
+              notif(v, `New idea ${id} submitted by ${userName(input.submittedBy)} awaits validation`, id)
+            ),
             ...s.notifications,
           ],
         }));

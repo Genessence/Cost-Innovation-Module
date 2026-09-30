@@ -13,7 +13,7 @@ export function ProtectedRoute({ children, roles }: ProtectedRouteProps) {
   const user = useAuthStore((s) => s.currentUser);
   if (!user) return <Navigate to="/login" replace />;
   if (roles && !roles.includes(user.role)) {
-    return <Navigate to={user.role === 'validator' ? '/dashboard' : '/my-ideas'} replace />;
+    return <Navigate to={user.role === 'validator' ? '/coin' : '/my-ideas'} replace />;
   }
   return <>{children}</>;
 }

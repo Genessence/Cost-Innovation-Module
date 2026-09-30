@@ -10,12 +10,12 @@ const STATUS_STYLES: Record<IdeaStatus, string> = {
 };
 
 export const STATUS_DOT_COLORS: Record<IdeaStatus, string> = {
-  'Pending Validation': '#D97706',
-  Feasible: '#0F766E',
-  'Not Feasible': '#DC2626',
-  'In Execution': '#2563EB',
-  Implemented: '#4F46E5',
-  Verified: '#059669',
+  'Pending Validation': '#B0782B',
+  Feasible: '#C6704A',
+  'Not Feasible': '#B24A34',
+  'In Execution': '#5A6E8C',
+  Implemented: '#6E5C74',
+  Verified: '#4E7358',
 };
 
 export function StatusBadge({ status }: { status: IdeaStatus }) {
@@ -56,6 +56,14 @@ export function PriorityBadge({ priority }: { priority: TaskPriority }) {
       className={`inline-flex items-center whitespace-nowrap rounded-full px-2 py-0.5 text-[11px] font-semibold ring-1 ring-inset ${PRIORITY_STYLES[priority]}`}
     >
       {priority}
+    </span>
+  );
+}
+
+export function VendorBadge() {
+  return (
+    <span className="inline-flex items-center rounded-full bg-orange-100 px-2.5 py-0.5 text-xs font-medium text-orange-700 ring-1 ring-inset ring-orange-600/20">
+      Vendor
     </span>
   );
 }
